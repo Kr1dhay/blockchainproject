@@ -1,0 +1,16 @@
+{
+  "name": "blockchainproject",
+  "version": "1.0.0",
+  "description": "Web3 Group project for the IS4302 Blockchain module at NUS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.19"
+  }
+}
