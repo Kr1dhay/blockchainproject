@@ -4,6 +4,8 @@
 If anyone installs extra dependancies, commit the hardhat.config.js file, the package.json and package-lock.json files.
 Everyone else can use them with simply npm install
 
+Pushing to main directly is disabled, create branch from main then merge back in when ready 
+
 
 ### Initial Setup 
 
