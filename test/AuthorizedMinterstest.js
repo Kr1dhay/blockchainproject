@@ -15,7 +15,7 @@ describe("AuthorizedMinters", function () {
 
         // Deploy AuthorizedMinters contract
         AuthorizedMinters = await ethers.getContractFactory("AuthorizedMinters");
-        authorizedMinters = await AuthorizedMinters.deploy(owner.address);
+        authorizedMinters = await AuthorizedMinters.connect(owner).deploy();
     });
 
     describe("Deployment", function () {
