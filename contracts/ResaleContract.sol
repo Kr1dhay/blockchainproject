@@ -1,0 +1,155 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "LuxuryWatchNFT.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "StolenWatchesRegistry.sol";
+import "AuthorizedMinters.sol";
+
+contract ResaleContract {
+    struct Listing {
+        address seller;
+        address buyer;
+        uint256 nftId;
+        address nftContract;
+        uint256 price;
+        uint256 purchaseTime;
+        bool shipped;
+        bool completed;
+        bool disputed;
+    }
+
+    uint256 public constant gracePeriod = 14 days;
+    address public owner;
+    uint256 private listingCounter;
+
+    mapping(uint256 => Listing) public listings;
+
+    event ListingCreated(uint256 indexed listingId, address indexed seller, uint256 nftId, address nftContract, uint256 price);
+    event ListingPurchased(uint256 indexed listingId, address indexed buyer);
+    event ItemShipped(uint256 indexed listingId);
+    event ReceiptConfirmed(uint256 indexed listingId);
+    event DisputeRaised(uint256 indexed listingId);
+    event DisputeResolved(uint256 indexed listingId, bool refundBuyer);
+    event AutoReleased(uint256 indexed listingId);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+
+    modifier onlySeller(uint256 listingId) {
+        require(msg.sender == listings[listingId].seller, "Not the seller");
+        _;
+    }
+
+    modifier onlyBuyer(uint256 listingId) {
+        require(msg.sender == listings[listingId].buyer, "Not the buyer");
+        _;
+    }
+
+    constructor(address _owner) {
+        owner = _owner;
+    }
+
+    function createListing(address nftContract, uint256 nftId, uint256 price) external {
+        require(price > 0, "Price must be greater than zero");
+
+        listingCounter++;
+        listings[listingCounter] = Listing({
+            seller: msg.sender,
+            buyer: address(0),
+            nftId: nftId,
+            nftContract: nftContract,
+            price: price,
+            purchaseTime: 0,
+            shipped: false,
+            completed: false,
+            disputed: false
+        });
+
+        IERC721(nftContract).transferFrom(msg.sender, address(this), nftId);
+
+        emit ListingCreated(listingCounter, msg.sender, nftId, nftContract, price);
+    }
+
+    function purchaseListing(uint256 listingId) external payable {
+        Listing storage listing = listings[listingId];
+        require(listing.seller != address(0), "Listing does not exist");
+        require(listing.buyer == address(0), "Listing already purchased");
+        require(msg.value == listing.price, "Incorrect payment amount");
+
+        listing.buyer = msg.sender;
+        listing.purchaseTime = block.timestamp;
+
+        emit ListingPurchased(listingId, msg.sender);
+    }
+
+    function markShipped(uint256 listingId) external onlySeller(listingId) {
+        Listing storage listing = listings[listingId];
+        require(!listing.completed, "Listing already completed");
+        require(!listing.disputed, "Listing is disputed");
+
+        listing.shipped = true;
+
+        emit ItemShipped(listingId);
+    }
+
+    function confirmReceipt(uint256 listingId) external onlyBuyer(listingId) {
+        Listing storage listing = listings[listingId];
+        require(listing.shipped, "Item not marked as shipped");
+        require(!listing.completed, "Listing already completed");
+        require(!listing.disputed, "Listing is disputed");
+
+        listing.completed = true;
+
+        payable(listing.seller).transfer(listing.price);
+        IERC721(listing.nftContract).transferFrom(address(this), listing.buyer, listing.nftId);
+
+        emit ReceiptConfirmed(listingId);
+    }
+
+    function raiseDispute(uint256 listingId) external onlyBuyer(listingId) {
+        Listing storage listing = listings[listingId];
+        require(!listing.completed, "Listing already completed");
+        require(!listing.disputed, "Listing already disputed");
+
+        listing.disputed = true;
+
+        emit DisputeRaised(listingId);
+    }
+
+    function autoRelease(uint256 listingId) external {
+        Listing storage listing = listings[listingId];
+        require(listing.shipped, "Item not marked as shipped");
+        require(!listing.completed, "Listing already completed");
+        require(!listing.disputed, "Listing is disputed");
+        require(block.timestamp > listing.purchaseTime + gracePeriod, "Grace period not over");
+
+        listing.completed = true;
+
+        payable(listing.seller).transfer(listing.price);
+        IERC721(listing.nftContract).transferFrom(address(this), listing.buyer, listing.nftId);
+
+        emit AutoReleased(listingId);
+    }
+
+    function resolveDispute(uint256 listingId, bool refundBuyer) external onlyowner {
+        Listing storage listing = listings[listingId];
+        require(listing.disputed, "Listing is not disputed");
+        require(!listing.completed, "Listing already completed");
+
+        listing.completed = true;
+
+        if (refundBuyer) {
+            payable(listing.buyer).transfer(listing.price);
+            IERC721(listing.nftContract).transferFrom(address(this), listing.seller, listing.nftId);
+        } else {
+            payable(listing.seller).transfer(listing.price);
+            IERC721(listing.nftContract).transferFrom(address(this), listing.buyer, listing.nftId);
+        }
+
+        emit DisputeResolved(listingId, refundBuyer);
+    }
+}
