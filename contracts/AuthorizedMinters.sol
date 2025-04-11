@@ -1,27 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-contract AuthorizedMinters is Ownable {
+contract AuthorizedMinters {
     struct Minter {
         uint256 royaltyPercentage; // in basis points (e.g., 500 = 5%)
     }
 
     mapping(address => Minter) private minters;
+    address public owner;
 
     event MinterAdded(address indexed minter);
     event MinterRemoved(address indexed minter);
 
+    constructor (address _owner) {
+        owner = _owner;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Caller is not the owner");
+        _;
+    }
+
     /**
      * @dev Check if minter exists.
      * @param minter The address of the minter to check.
-     * @return True if the minter is authorized, false otherwise.
+     * @return True if the minted exists, false otherwise.
      */
-    function isMinterExists(address minter) external view returns (bool) {
+    function isMinter(address minter) external view returns (bool) {
         return minters[minter].royaltyPercentage > 0;
     }
-    
+
     /**
      * @dev Adds a new minter with a specified royalty percentage.
      * Can only be called by the contract owner.
@@ -52,7 +59,7 @@ contract AuthorizedMinters is Ownable {
      * @return The royalty percentage in basis points.
      */
     function getRoyaltyPercentage(address minter) external view returns (uint256) {
-        require(minters[minter].isAuthorized, "Minter not authorized");
+        // TODO: maybe add a check for if either the minter or the owner or the ResaleContract is the caller
         return minters[minter].royaltyPercentage;
     }
 }
