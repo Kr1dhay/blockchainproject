@@ -55,7 +55,8 @@ contract LuxuryWatchNFT is ERC721 {
     function mint(address to, uint256 tokenId) external isMinter() {
         _mint(to, tokenId); // Mint the token
         _minterOf[tokenId] = msg.sender;
-
+        // Add the tokenId to the _existingTokens array
+        _existingTokens.push(tokenId);
         emit TokenMinted(msg.sender, to, tokenId); // Emit the TokenMinted event
     }
 
