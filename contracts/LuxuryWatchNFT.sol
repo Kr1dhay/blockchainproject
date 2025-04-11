@@ -27,7 +27,8 @@ contract LuxuryWatchNFT is ERC721 {
         _;
     }
 
-    modifier isExistingToken(uint256 tokenId) {
+    function isExistingToken(uint256 tokenId) public view returns (bool) {
+        // Check if the tokenId exists in the _existingTokens array
         bool exists = false;
         for (uint256 i = 0; i < _existingTokens.length; i++) {
             if (_existingTokens[i] == tokenId) {
@@ -35,8 +36,7 @@ contract LuxuryWatchNFT is ERC721 {
                 break;
             }
         }
-        require(exists, "Token does not exist.");
-        _;
+        return exists;
     }
 
     // Constructor to initialize the AuthorizedMinters contract address
@@ -67,12 +67,14 @@ contract LuxuryWatchNFT is ERC721 {
     }
 
     // Function to get the minter of a token
-    function minterOf(uint256 tokenId) external view isExistingToken(tokenId) returns (address) {
+    function minterOf(uint256 tokenId) external view returns (address) {
+        require(isExistingToken(tokenId), "Token does not exist.");
         return _minterOf[tokenId];
     }
 
     // Function to get the owner of a token
-    function ownerOfToken(uint256 tokenId) external view isExistingToken(tokenId) returns (address) {
+    function ownerOfToken(uint256 tokenId) external view returns (address) {
+        require(isExistingToken(tokenId), "Token does not exist.");
         return erc721Instance.ownerOf(tokenId);
     }
 
