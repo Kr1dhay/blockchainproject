@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "LuxuryWatchNFT.sol";
+import "./LuxuryWatchNFT.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "StolenWatchesRegistry.sol";
-import "AuthorizedMinters.sol";
+import "./StolenWatchesRegistry.sol";
+import "./AuthorizedMinters.sol";
 
 contract ResaleContract {
     struct Listing {
@@ -21,7 +21,9 @@ contract ResaleContract {
     }
 
     uint256 public constant gracePeriod = 14 days;
+    uint256 public constant commissionRate = 5; // 5% commission
     address public owner;
+    address public authorizedMinter;
     uint256 private listingCounter;
 
     mapping(uint256 => Listing) public listings;
@@ -49,8 +51,9 @@ contract ResaleContract {
         _;
     }
 
-    constructor(address _owner) {
+    constructor(address _owner, address _authorizedMinter) {
         owner = _owner;
+        authorizedMinter = _authorizedMinter;
     }
 
     function createListing(address nftContract, uint256 nftId, uint256 price) external {
@@ -104,7 +107,11 @@ contract ResaleContract {
 
         listing.completed = true;
 
-        payable(listing.seller).transfer(listing.price);
+        uint256 commission = (listing.price * commissionRate) / 100;
+        uint256 sellerAmount = listing.price - commission;
+
+        payable(authorizedMinter).transfer(commission);
+        payable(listing.seller).transfer(sellerAmount);
         IERC721(listing.nftContract).transferFrom(address(this), listing.buyer, listing.nftId);
 
         emit ReceiptConfirmed(listingId);
@@ -129,13 +136,17 @@ contract ResaleContract {
 
         listing.completed = true;
 
-        payable(listing.seller).transfer(listing.price);
+        uint256 commission = (listing.price * commissionRate) / 100;
+        uint256 sellerAmount = listing.price - commission;
+
+        payable(authorizedMinter).transfer(commission);
+        payable(listing.seller).transfer(sellerAmount);
         IERC721(listing.nftContract).transferFrom(address(this), listing.buyer, listing.nftId);
 
         emit AutoReleased(listingId);
     }
 
-    function resolveDispute(uint256 listingId, bool refundBuyer) external onlyowner {
+    function resolveDispute(uint256 listingId, bool refundBuyer) external onlyOwner {
         Listing storage listing = listings[listingId];
         require(listing.disputed, "Listing is not disputed");
         require(!listing.completed, "Listing already completed");
@@ -146,7 +157,11 @@ contract ResaleContract {
             payable(listing.buyer).transfer(listing.price);
             IERC721(listing.nftContract).transferFrom(address(this), listing.seller, listing.nftId);
         } else {
-            payable(listing.seller).transfer(listing.price);
+            uint256 commission = (listing.price * commissionRate) / 100;
+            uint256 sellerAmount = listing.price - commission;
+
+            payable(authorizedMinter).transfer(commission);
+            payable(listing.seller).transfer(sellerAmount);
             IERC721(listing.nftContract).transferFrom(address(this), listing.buyer, listing.nftId);
         }
 
