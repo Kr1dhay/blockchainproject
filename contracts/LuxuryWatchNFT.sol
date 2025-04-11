@@ -6,6 +6,7 @@ import "./AuthorizedMinters.sol";
 
 contract LuxuryWatchNFT is ERC721 {
     
+    address private _contractOwner; // Address of the contract owner
     mapping(uint256 => address) private _minterOf; // Mapping to store the original minter of each token
     uint256[] private _existingTokens; // Array to store existing tokens
 
@@ -40,9 +41,10 @@ contract LuxuryWatchNFT is ERC721 {
     }
 
     // Constructor to initialize the AuthorizedMinters contract address
-    constructor(address authorizedMintersAddress) ERC721("LuxuryWatchNFT", "LWNFT") {
+    constructor(address authorizedMintersAddress, address owner) ERC721("LuxuryWatchNFT", "LWNFT") {
         authorizedMinters = AuthorizedMinters(authorizedMintersAddress);
         erc721Instance = ERC721(address(this)); // Initialize the ERC721 instance
+        _contractOwner = owner;
     }
 
     // Modified to check if minted NFT belongs to the caller
@@ -81,5 +83,9 @@ contract LuxuryWatchNFT is ERC721 {
     // Function to transfer directly from Authorized Minter to Primary Seller
     function transferFromMinterToPrimarySeller(address from, address to, uint256 tokenId) external isMinter() onlyMinter(tokenId) {
         _transfer(from, to, tokenId); // Transfer the token
+    }
+
+    function getContractOwner() external view returns (address) {
+        return _contractOwner;
     }
 }

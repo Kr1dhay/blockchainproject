@@ -11,8 +11,8 @@ contract AuthorizedMinters {
     event MinterAdded(address indexed minter);
     event MinterRemoved(address indexed minter);
 
-    constructor (address _owner) {
-        owner = _owner;
+    constructor () {
+        owner = msg.sender;
     }
 
     modifier onlyOwner() {
