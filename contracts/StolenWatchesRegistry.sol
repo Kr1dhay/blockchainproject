@@ -5,37 +5,38 @@ import "./LuxuryWatchNFT.sol";
 
 contract StolenWatchesRegistry {
     mapping(uint256 => bool) private stolenTokens;
-    address private owner;
-    LuxuryWatchNFT private luxuryWatchNFT;
+    address public contractOwner;
+    LuxuryWatchNFT public luxuryWatchNFT;
 
-    event TokenFlaggedAsStolen(uint256 tokenId, address flaggedBy);
+    event TokenFlaggedAsStolen(string serialID, address flaggedBy);
 
     constructor(address luxuryWatchNFTAddress) {
-        owner = msg.sender;
+        contractOwner = msg.sender;
         luxuryWatchNFT = LuxuryWatchNFT(luxuryWatchNFTAddress);
     }
 
-    modifier onlyOwner(uint256 tokenId) {
-        require(luxuryWatchNFT.ownerOfToken(tokenId) == msg.sender, "Only the owner of the token can call this function");
+    modifier onlyOwner(string memory serialID) {
+        require(luxuryWatchNFT.ownerOfToken(serialID) == msg.sender, "Only the owner of the token can call this function");
         _;
     }
 
-    function flagAsStolen(uint256 tokenId) external onlyOwner(tokenId) {
+    function flagAsStolen(string memory serialID) external onlyOwner(serialID) {
+        uint256 tokenId = luxuryWatchNFT.getTokenFromSerialID(serialID);
+
         require(!stolenTokens[tokenId], "Token is already flagged as stolen");
-        require(luxuryWatchNFT.isExistingToken(tokenId), "Token does not exist");
-        require(luxuryWatchNFT.ownerOfToken(tokenId) == msg.sender, "Only the owner of the token can flag it as stolen");
         stolenTokens[tokenId] = true;
-        emit TokenFlaggedAsStolen(tokenId, msg.sender);
+        emit TokenFlaggedAsStolen(serialID, msg.sender);
     }
 
-    function unflagAsStolen(uint256 tokenId) external onlyOwner(tokenId) {
+    function unflagAsStolen(string memory serialID) external onlyOwner(serialID) {
+        uint256 tokenId = luxuryWatchNFT.getTokenFromSerialID(serialID);
+
         require(stolenTokens[tokenId], "Token is already flagged as not stolen");
-        require(luxuryWatchNFT.isExistingToken(tokenId), "Token does not exist");
-        require(luxuryWatchNFT.ownerOfToken(tokenId) == msg.sender, "Only the owner of the token can unflag it as stolen");
         stolenTokens[tokenId] = false;
     }
 
-    function isStolen(uint256 tokenId) external view returns (bool) {
+    function isStolen(string memory serialID) external view returns (bool) {
+        uint256 tokenId = luxuryWatchNFT.getTokenFromSerialID(serialID);
         return stolenTokens[tokenId];
     }
 }

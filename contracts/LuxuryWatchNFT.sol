@@ -1,25 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721URIStorage, ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "./AuthorizedMinters.sol";
 
-contract LuxuryWatchNFT is ERC721 {
+
+
+contract LuxuryWatchNFT is ERC721URIStorage {
     
-    mapping(uint256 => address) private _minterOf; // Mapping to store the original minter of each token
-    uint256[] private _existingTokens; // Array to store existing tokens
+    address public contractOwner; 
+    AuthorizedMinters public authorizedMinters;
 
-    // Event emitted when a token is minted
-    event TokenMinted(address indexed minter, address indexed to, uint256 indexed tokenId);
+    uint256 private tokenCounter;
+    mapping(string => uint256) private serialIDtoTokenID;
+    mapping(uint256 => address) private tokenIDtoMinter;
 
-    // Event emitted when a token is destroyed
-    event TokenDestroyed(uint256 indexed tokenId);
+    event TokenMinted(address indexed minter, address indexed to, string serialID);
+    event TokenDestroyed(string serialID);
 
-    // Instance of the AuthorizedMinters contract
-    AuthorizedMinters private authorizedMinters;
-
-    // Instance of ERC721 contract
-    ERC721 private erc721Instance;
+    constructor(address authorizedMintersAddress) ERC721("LuxuryWatchNFT", "LWNFT") {
+        authorizedMinters = AuthorizedMinters(authorizedMintersAddress);
+        contractOwner = msg.sender;
+        tokenCounter = 0;
+    }
 
     // Modifier to restrict access to authorized minters
     modifier isMinter() {
@@ -27,60 +30,49 @@ contract LuxuryWatchNFT is ERC721 {
         _;
     }
 
-    function isExistingToken(uint256 tokenId) public view returns (bool) {
-        // Check if the tokenId exists in the _existingTokens array
-        bool exists = false;
-        for (uint256 i = 0; i < _existingTokens.length; i++) {
-            if (_existingTokens[i] == tokenId) {
-                exists = true;
-                break;
-            }
-        }
-        return exists;
+    // Mints a new token and assigns metadata URI
+    function mint(address to, string memory serialID, string memory uri) external isMinter {
+        require(serialIDtoTokenID[serialID] == 0, "Token already minted");
+
+        tokenCounter++;
+        uint256 tokenId = tokenCounter;
+        serialIDtoTokenID[serialID] = tokenId;
+        tokenIDtoMinter[tokenId] = msg.sender;
+
+        _safeMint(to, tokenId);
+        _setTokenURI(tokenId, uri);
+
+        emit TokenMinted(msg.sender, to, serialID);
     }
 
-    // Constructor to initialize the AuthorizedMinters contract address
-    constructor(address authorizedMintersAddress) ERC721("LuxuryWatchNFT", "LWNFT") {
-        authorizedMinters = AuthorizedMinters(authorizedMintersAddress);
-        erc721Instance = ERC721(address(this)); // Initialize the ERC721 instance
+    function getTokenFromSerialID(string memory serialID) public view returns (uint256) {
+        uint256 tokenId = serialIDtoTokenID[serialID];
+        require(tokenId != 0, "Token does not exist.");
+        return tokenId;
+    }
+    
+
+    function minterOfToken(string memory serialID) external view returns (address) {
+        uint256 tokenId = getTokenFromSerialID(serialID);
+        return tokenIDtoMinter[tokenId];
     }
 
-    // Modified to check if minted NFT belongs to the caller
-    modifier onlyMinter(uint256 tokenId) {
-        require(_minterOf[tokenId] == msg.sender, "Caller is not the minter of this token.");
-        _;
+    function ownerOfToken(string memory serialID) external view returns (address) {
+        uint256 tokenId = getTokenFromSerialID(serialID);
+
+        return ownerOf(tokenId); // ERC721's built in function
     }
 
-    // Function to mint a new NFT
-    function mint(address to, uint256 tokenId) external isMinter() {
-        _mint(to, tokenId); // Mint the token
-        _minterOf[tokenId] = msg.sender;
-        // Add the tokenId to the _existingTokens array
-        _existingTokens.push(tokenId);
-        emit TokenMinted(msg.sender, to, tokenId); // Emit the TokenMinted event
+    function burn(string memory serialID) external {
+        uint256 tokenId = getTokenFromSerialID(serialID);
+        require(ownerOf(tokenId) == msg.sender, "Caller is not the owner of this token.");
+
+
+        _burn(tokenId); // ERC721's built in function
+        delete tokenIDtoMinter[tokenId];
+        delete serialIDtoTokenID[serialID];
+        emit TokenDestroyed(serialID);
     }
 
-    // Function to burn (destroy) a token
-    function burn(uint256 tokenId) external isMinter() {
-        _burn(tokenId);
 
-        emit TokenDestroyed(tokenId); // Emit the TokenDestroyed event
-    }
-
-    // Function to get the minter of a token
-    function minterOf(uint256 tokenId) external view returns (address) {
-        require(isExistingToken(tokenId), "Token does not exist.");
-        return _minterOf[tokenId];
-    }
-
-    // Function to get the owner of a token
-    function ownerOfToken(uint256 tokenId) external view returns (address) {
-        require(isExistingToken(tokenId), "Token does not exist.");
-        return erc721Instance.ownerOf(tokenId);
-    }
-
-    // Function to transfer directly from Authorized Minter to Primary Seller
-    function transferFromMinterToPrimarySeller(address from, address to, uint256 tokenId) external isMinter() onlyMinter(tokenId) {
-        _transfer(from, to, tokenId); // Transfer the token
-    }
 }
