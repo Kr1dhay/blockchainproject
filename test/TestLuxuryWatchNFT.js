@@ -43,8 +43,37 @@ describe("LuxuryWatchNFT", function () {
             await expect(luxuryWatchNFT.connect(addr1).mint(addr1.address, "OMGA111111", "ipfs://test-uri/watch.json"))
                 .to.be.revertedWith("Not an authorized minter.");
         });
-    }
-    );
+    });
+
+    describe("Test Approval", function () {
+
+      it("should fail to approve if the caller is not the owner", async function () {
+          await expect(luxuryWatchNFT.connect(addr2).approveListingToken("RLX123456"))
+              .to.be.revertedWith("Caller is not the owner of this token.");
+      });
+
+
+      it("should fail to approve if the market address not set", async function () {
+        await expect(luxuryWatchNFT.connect(addr1).approveListingToken("OMGA111111"))
+            .to.be.revertedWith("Token does not exist.");
+    });
+
+      it ("should allow the owner to set the correct marketplace address", async function () {
+          await expect(luxuryWatchNFT.connect(contractOwner).setResllContractAddress(addr3.address))
+              .to.not.be.reverted;
+
+          expect(await luxuryWatchNFT.resellContractAddress()).to.equal(addr3.address);
+      });
+
+      it("should approve an address to transfer the token", async function () {
+          await expect(luxuryWatchNFT.connect(addr1).approveListingToken("RLX123456"))
+              .to.not.be.reverted;
+
+          const tokenID = await luxuryWatchNFT.getTokenFromSerialID("RLX123456");
+          expect(await luxuryWatchNFT.getApproved(tokenID)).to.equal(addr3.address);
+      });
+
+  });
 
 
     describe("Burning", function () {
@@ -68,6 +97,7 @@ describe("LuxuryWatchNFT", function () {
         });
 
     });
+
 
 
 });

@@ -10,7 +10,7 @@ contract LuxuryWatchNFT is ERC721URIStorage {
     
     address public contractOwner; 
     AuthorizedMinters public authorizedMinters;
-    address private resellContractAddress;
+    address public resellContractAddress;
 
     uint256 private tokenCounter;
     mapping(string => uint256) private serialIDtoTokenID;
@@ -80,9 +80,9 @@ contract LuxuryWatchNFT is ERC721URIStorage {
     }
 
     function approveListingToken(string memory serialID) public  {
-        require(resellContractAddress != address(0), "Cannot approve to zero address");
         uint256 tokenId = getTokenFromSerialID(serialID);
         require(ownerOf(tokenId) == msg.sender, "Caller is not the owner of this token.");
+        require(resellContractAddress != address(0), "Cannot approve to zero address");
 
         _approve(resellContractAddress, tokenId, msg.sender);
     }
