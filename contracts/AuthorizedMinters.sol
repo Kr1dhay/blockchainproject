@@ -15,7 +15,7 @@ contract AuthorizedMinters {
         contractOwner = msg.sender;
     }
 
-    modifier onlyOwner() {
+    modifier onlyContractOwner() {
         require(msg.sender == contractOwner, "Caller is not the contractOwner");
         _;
     }
@@ -35,7 +35,7 @@ contract AuthorizedMinters {
      * @param minter The address of the minter to add.
      * @param royaltyPercentage The royalty percentage in basis points.
      */
-    function addMinter(address minter, uint256 royaltyPercentage) external onlyOwner {
+    function addMinter(address minter, uint256 royaltyPercentage) external onlyContractOwner {
         require(minter != address(0), "Invalid minter address");
         require(royaltyPercentage <= 10000, "Royalty percentage exceeds 100%");
 
@@ -48,7 +48,7 @@ contract AuthorizedMinters {
      * Can only be called by the contract contractOwner.
      * @param minter The address of the minter to remove.
      */
-    function removeMinter(address minter) external onlyOwner {
+    function removeMinter(address minter) external onlyContractOwner {
         delete minters[minter];
         emit MinterRemoved(minter);
     }
