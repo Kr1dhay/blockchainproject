@@ -41,10 +41,10 @@ contract LuxuryWatchNFT is ERC721 {
     }
 
     // Constructor to initialize the AuthorizedMinters contract address
-    constructor(address authorizedMintersAddress, address owner) ERC721("LuxuryWatchNFT", "LWNFT") {
+    constructor(address authorizedMintersAddress) ERC721("LuxuryWatchNFT", "LWNFT") {
         authorizedMinters = AuthorizedMinters(authorizedMintersAddress);
         erc721Instance = ERC721(address(this)); // Initialize the ERC721 instance
-        _contractOwner = owner;
+        _contractOwner = msg.sender;
     }
 
     // Modified to check if minted NFT belongs to the caller
