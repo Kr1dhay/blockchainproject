@@ -87,5 +87,10 @@ contract LuxuryWatchNFT is ERC721URIStorage {
         _approve(resellContractAddress, tokenId, msg.sender);
     }
 
+    function tokenURIBySerialID(string memory serialID) external view returns (string memory) {
+    uint256 tokenId = getTokenFromSerialID(serialID);
+    return tokenURI(tokenId);
+}
+
 
 }
