@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 contract AuthorizedMinters {
-    struct Minter {
+    struct minterDetails {
+        string brand;
+        string location;
         uint256 royaltyPercentage; // in basis points (e.g., 500 = 5%)
     }
 
-    mapping(address => Minter) private minters;
+    mapping(address => minterDetails) private minters;
     address public contractOwner;
 
     event MinterAdded(address indexed minter);
@@ -26,40 +28,44 @@ contract AuthorizedMinters {
      * @return True if the minted exists, false otherwise.
      */
     function isMinter(address minter) external view returns (bool) {
-        return minters[minter].royaltyPercentage > 0;
+        return bytes(minters[minter].brand).length > 0;
     }
 
     /**
      * @dev Adds a new minter with a specified royalty percentage.
      * Can only be called by the contract contractOwner.
-     * @param minter The address of the minter to add.
-     * @param royaltyPercentage The royalty percentage in basis points.
      */
-    function addMinter(address minter, uint256 royaltyPercentage) external onlyContractOwner {
+    function addMinter(address minter, string memory _brand, string memory _location, uint256 _royaltyPercentage) external onlyContractOwner {
         require(minter != address(0), "Invalid minter address");
-        require(royaltyPercentage <= 10000, "Royalty percentage exceeds 100%");
+        require(bytes(_brand).length > 0, "Brand name cannot be empty");
+        require(bytes(_location).length > 0, "Location cannot be empty");
+        require(bytes(minters[minter].brand).length == 0, "Minter already exists");
+        require(_royaltyPercentage <= 10000, "Royalty percentage exceeds 100%");
 
-        minters[minter] = Minter(royaltyPercentage);
+        minters[minter] = minterDetails(_brand, _location, _royaltyPercentage);
         emit MinterAdded(minter);
     }
 
     /**
      * @dev Removes an authorized minter.
-     * Can only be called by the contract contractOwner.
-     * @param minter The address of the minter to remove.
      */
     function removeMinter(address minter) external onlyContractOwner {
         delete minters[minter];
         emit MinterRemoved(minter);
     }
 
-    /**
-     * @dev Gets the royalty percentage for a specific minter.
-     * @param minter The address of the minter.
-     * @return The royalty percentage in basis points.
-     */
+    function getBrand(address minter) external view returns (string memory) {
+        require(bytes(minters[minter].brand).length != 0, "Minter does not exist");
+        return minters[minter].brand;
+    }
+
+    function getLocation(address minter) external view returns (string memory) {
+        require(bytes(minters[minter].brand).length != 0, "Minter does not exist");
+        return minters[minter].location;
+    }
+
     function getRoyaltyPercentage(address minter) external view returns (uint256) {
-        // TODO: maybe add a check for if either the minter or the contractOwner or the ResaleContract is the caller
+        require(bytes(minters[minter].brand).length != 0, "Minter does not exist");
         return minters[minter].royaltyPercentage;
     }
 }
