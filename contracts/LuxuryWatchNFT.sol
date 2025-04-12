@@ -45,22 +45,26 @@ contract LuxuryWatchNFT is ERC721URIStorage {
         emit TokenMinted(msg.sender, to, serialID);
     }
 
-    function minterOfToken(string memory serialID) external view returns (address) {
+    function getTokenFromSerialID(string memory serialID) public view returns (uint256) {
         uint256 tokenId = serialIDtoTokenID[serialID];
         require(tokenId != 0, "Token does not exist.");
+        return tokenId;
+    }
+    
+
+    function minterOfToken(string memory serialID) external view returns (address) {
+        uint256 tokenId = getTokenFromSerialID(serialID);
         return tokenIDtoMinter[tokenId];
     }
 
     function ownerOfToken(string memory serialID) external view returns (address) {
-        uint256 tokenId = serialIDtoTokenID[serialID];
-        require(tokenId != 0, "Token does not exist.");
+        uint256 tokenId = getTokenFromSerialID(serialID);
 
         return ownerOf(tokenId); // ERC721's built in function
     }
 
     function burn(string memory serialID) external {
-        uint256 tokenId = serialIDtoTokenID[serialID];
-        require(tokenId != 0, "Token does not exist.");
+        uint256 tokenId = getTokenFromSerialID(serialID);
         require(ownerOf(tokenId) == msg.sender, "Caller is not the owner of this token.");
 
 

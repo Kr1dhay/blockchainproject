@@ -1,141 +1,101 @@
-// const { expect } = require("chai");
-// const { ethers } = require("hardhat");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-// describe("StolenWatchesRegistry Contract", function () {
-//   let luxuryWatchNFT;
-//   let authorizedMinters;
-//   let stolenWatchesRegistry;
-//   let contractOwner;
-//   let minter;
-//   let watchOwner;
-//   let nonOwner;
-//   let tokenId = 1;
+describe("StolenWatchesRegistry Contract", function () {
+  let contractOwner;
+  let authorizedMinters;
+  let luxuryWatchNFT;
+  let stolenWatchesRegistry;
+  let minter, addr1, addr2, addr3
 
-//   beforeEach(async function () {
-//     // Get signers
-//     [contractOwner, minter, watchOwner, nonOwner] = await ethers.getSigners();
+  before(async function () {
+    [contractOwner, minter, addr1, addr2, addr3] = await ethers.getSigners();
 
-//     // Deploy AuthorizedMinters contract first
-//     const AuthorizedMinters = await ethers.getContractFactory("AuthorizedMinters");
-//     authorizedMinters = await AuthorizedMinters.deploy(contractOwner.address);
-//     await authorizedMinters.waitForDeployment();
+    AuthorizedMinters = await ethers.getContractFactory("AuthorizedMinters");
+    authorizedMinters = await AuthorizedMinters.connect(contractOwner).deploy();
+    await authorizedMinters.connect(contractOwner).addMinter(minter.address, "Rolex", "Orchard Road", 500);
 
-//     // Add minter with 5% royalty
-//     await authorizedMinters.addMinter(minter.address, 500);
+    LuxuryWatchNFT = await ethers.getContractFactory("LuxuryWatchNFT");
+    luxuryWatchNFT = await LuxuryWatchNFT.connect(contractOwner).deploy(await authorizedMinters.getAddress());
 
-//     // Deploy LuxuryWatchNFT with AuthorizedMinters address
-//     const LuxuryWatchNFT = await ethers.getContractFactory("LuxuryWatchNFT");
-//     const authorizedMintersAddress = await authorizedMinters.getAddress();
-//     luxuryWatchNFT = await LuxuryWatchNFT.deploy(authorizedMintersAddress);
-//     await luxuryWatchNFT.waitForDeployment();
+    luxuryWatchNFT.connect(minter).mint(addr1.address, "RLX123456", "ipfs://test-uri/watch.json");
 
-//     // Deploy StolenWatchesRegistry with LuxuryWatchNFT address
-//     const StolenWatchesRegistry = await ethers.getContractFactory("StolenWatchesRegistry");
-//     const luxuryWatchNFTAddress = await luxuryWatchNFT.getAddress();
-//     stolenWatchesRegistry = await StolenWatchesRegistry.deploy(luxuryWatchNFTAddress);
-//     await stolenWatchesRegistry.waitForDeployment();
+    StolenWatchesRegistry = await ethers.getContractFactory("StolenWatchesRegistry");
+    stolenWatchesRegistry = await StolenWatchesRegistry.connect(contractOwner).deploy(await luxuryWatchNFT.getAddress());
+  });
 
-//     // Mint a token for watchOwner and verify
-//     await luxuryWatchNFT.connect(minter).mint(watchOwner.address, tokenId);
-    
-//     // Add verification (Changed variable name from 'contractOwner' to 'tokenOwner')
-//     const tokenOwner = await luxuryWatchNFT.ownerOf(tokenId);
-//     expect(tokenOwner).to.equal(watchOwner.address);
-// });
+    describe("Deployment", function () {
+        it("Should set the correct contractOwner", async function () {
+            expect(await stolenWatchesRegistry.contractOwner()).to.equal(contractOwner.address);
+        });
 
-//   describe("Deployment", function () {
-//     it("Should deploy successfully", async function () {
-//       const address = await stolenWatchesRegistry.getAddress();
-//       expect(address).to.be.properAddress;
-//     });
-//   });
+        it("Should set the correct luxuryWatchNFT contract address", async function () {
+            expect(await stolenWatchesRegistry.luxuryWatchNFT()).to.equal(await luxuryWatchNFT.getAddress());
+        });
+    });
 
-//   describe("Flagging watches as stolen", function () {
-//     it("Should allow token contractOwner to flag watch as stolen", async function () {
-//       await expect(stolenWatchesRegistry.connect(watchOwner).flagAsStolen(tokenId))
-//         .to.emit(stolenWatchesRegistry, "TokenFlaggedAsStolen")
-//         .withArgs(tokenId, watchOwner.address);
 
-//       expect(await stolenWatchesRegistry.isStolen(tokenId)).to.equal(true);
-//     });
 
-//     it("Should not allow non-contractOwner to flag watch as stolen", async function () {
-//       await expect(
-//         stolenWatchesRegistry.connect(nonOwner).flagAsStolen(tokenId)
-//       ).to.be.revertedWith("Only the contractOwner of the token can call this function");
-//     });
+  describe("Flagging watches as stolen", function () {
 
-//     it("Should not allow flagging a non-existent token", async function () {
-//       const nonExistentTokenId = 999;
-      
-//       await expect(
-//         stolenWatchesRegistry.connect(watchOwner).flagAsStolen(nonExistentTokenId)
-//       ).to.be.reverted; // Specific error message depends on how LuxuryWatchNFT handles non-existent tokens
-//     });
+    it("Should not allow non-tokenOwner to flag watch as stolen", async function () {
+      await expect(
+        stolenWatchesRegistry.connect(minter).flagAsStolen("RLX123456")
+      ).to.be.revertedWith("Only the owner of the token can call this function");
+    });
 
-//     it("Should not allow flagging an already stolen watch", async function () {
-//       // First flag
-//       await stolenWatchesRegistry.connect(watchOwner).flagAsStolen(tokenId);
-      
-//       // Try to flag again
-//       await expect(
-//         stolenWatchesRegistry.connect(watchOwner).flagAsStolen(tokenId)
-//       ).to.be.revertedWith("Token is already flagged as stolen");
-//     });
-//   });
+    it("Should not allow flagging a non-existent token", async function () {      
+      await expect(
+        stolenWatchesRegistry.connect(addr1).flagAsStolen("OMGA123456")
+      ).to.be.revertedWith("Token does not exist.");
+    });
 
-//   describe("Unflagging watches as not stolen", function () {
-//     beforeEach(async function () {
-//       // Flag token as stolen first
-//       await stolenWatchesRegistry.connect(watchOwner).flagAsStolen(tokenId);
-//     });
+    it("Should allow token contractOwner to flag watch as stolen", async function () {
+        await expect(stolenWatchesRegistry.connect(addr1).flagAsStolen("RLX123456"))
+          .to.emit(stolenWatchesRegistry, "TokenFlaggedAsStolen")
+          .withArgs("RLX123456", addr1.address);
+  
+        expect(await stolenWatchesRegistry.isStolen("RLX123456")).to.equal(true);
+      });
 
-//     it("Should allow token contractOwner to unflag watch as stolen", async function () {
-//       await expect(stolenWatchesRegistry.connect(watchOwner).unflagAsStolen(tokenId))
-//         .to.not.be.reverted;
-//       expect(await stolenWatchesRegistry.isStolen(tokenId)).to.equal(false);
-//     });
 
-//     it("Should not allow non-contractOwner to unflag watch as stolen", async function () {
-//       await expect(
-//         stolenWatchesRegistry.connect(nonOwner).unflagAsStolen(tokenId)
-//       ).to.be.revertedWith("Only the contractOwner of the token can call this function");
-//     });
+    it("Should not allow flagging an already stolen watch", async function () {
+        await expect(stolenWatchesRegistry.connect(addr1).flagAsStolen("RLX123456"))
+            .to.be.revertedWith("Token is already flagged as stolen");
 
-//     it("Should not allow unflagging a non-existent token", async function () {
-//       const nonExistentTokenId = 999;
-      
-//       await expect(
-//         stolenWatchesRegistry.connect(watchOwner).unflagAsStolen(nonExistentTokenId)
-//       ).to.be.reverted; // Specific error message depends on how LuxuryWatchNFT handles non-existent tokens
-//     });
+    });
+});
 
-//     it("Should not allow unflagging a watch that's not marked as stolen", async function () {
-//       // First unflag
-//       await stolenWatchesRegistry.connect(watchOwner).unflagAsStolen(tokenId);
-      
-//       // Try to unflag again
-//       await expect(
-//         stolenWatchesRegistry.connect(watchOwner).unflagAsStolen(tokenId)
-//       ).to.be.revertedWith("Token is already flagged as not stolen");
-//     });
-//   });
+  describe("Unflagging watches as not stolen", function () {
 
-//   describe("Querying stolen status", function () {
-//     it("Should return false for non-stolen watches", async function () {
-//       expect(await stolenWatchesRegistry.isStolen(tokenId)).to.equal(false);
-//     });
+    it("Should not allow non-owner to unflag watch as stolen", async function () {
+      await expect(
+        stolenWatchesRegistry.connect(addr2).unflagAsStolen("RLX123456")
+      ).to.be.revertedWith("Only the owner of the token can call this function");
+    });
 
-//     it("Should return true for stolen watches", async function () {
-//       await stolenWatchesRegistry.connect(watchOwner).flagAsStolen(tokenId);
-//       expect(await stolenWatchesRegistry.isStolen(tokenId)).to.equal(true);
-//     });
+    it("Should not allow unflagging a non-existent token", async function () {      
+      await expect(
+        stolenWatchesRegistry.connect(addr1).unflagAsStolen("OMG123456")
+      ).to.be.revertedWith("Token does not exist.");
+    });
 
-//     it("Should return false for non-existent tokens", async function () {
-//       const nonExistentTokenId = 999;
-//       expect(await stolenWatchesRegistry.isStolen(nonExistentTokenId)).to.equal(false);
-//     });
-//   });
+
+    it("Should allow token contractOwner to unflag watch as stolen", async function () {
+        await expect(stolenWatchesRegistry.connect(addr1).unflagAsStolen("RLX123456"))
+          .to.not.be.reverted;
+        expect(await stolenWatchesRegistry.isStolen("RLX123456")).to.equal(false);
+      });
+
+    it("Should not allow unflagging a watch that's not marked as stolen", async function () {
+      await expect(
+        stolenWatchesRegistry.connect(addr1).unflagAsStolen("RLX123456")
+      ).to.be.revertedWith("Token is already flagged as not stolen");
+    });
+
+  });
+
+});
 
 //   describe("Change of ownership", function () {
 //     beforeEach(async function () {
