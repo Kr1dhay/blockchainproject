@@ -8,8 +8,8 @@ import "./StolenWatchesRegistry.sol";
 
 contract ResellWatch { 
     // Instance references for the deployed contracts.
-    LuxuryWatchNFT public luxurywatchNFT;
-    StolenWatchesRegistry public stolenWatchRegistry;
+    LuxuryWatchNFT public luxuryWatchNFT;
+    StolenWatchesRegistry public stolenWatchesRegistry;
     AuthorizedMinters public authorizedMinters;
     address public contractOwner;
     uint256 private sellerCounter;
@@ -30,12 +30,12 @@ contract ResellWatch {
 
 
     constructor(
+        address _authorizedMinters, // Optional: include if you plan to use authorized checks
         address _watchNFT,
-        address _stolenRegistry,
-        address _authorizedMinters // Optional: include if you plan to use authorized checks
+        address _stolenRegistry
     ) {
-        luxurywatchNFT = LuxuryWatchNFT(_watchNFT);
-        stolenWatchRegistry = StolenWatchesRegistry(_stolenRegistry);
+        luxuryWatchNFT = LuxuryWatchNFT(_watchNFT);
+        stolenWatchesRegistry = StolenWatchesRegistry(_stolenRegistry);
         authorizedMinters = AuthorizedMinters(_authorizedMinters);
         contractOwner = msg.sender;
         sellerCounter = 0;
@@ -45,13 +45,13 @@ contract ResellWatch {
     // We allow for a 0 price, which means that the monetary transaction of the watch and NFT will happen off platform
     // The watch store will take a fixed fee if this is the case
     function listWatch(string memory serialID, uint256 _priceWEI, address _buyer) external  {
-        require(luxurywatchNFT.ownerOfToken(serialID) == msg.sender, "Only the owner of the token can call this function");
-        uint256 tokenId = luxurywatchNFT.getTokenFromSerialID(serialID);
-        require(!stolenWatchRegistry.isStolen(serialID), "Watch is registered as stolen");
+        require(luxuryWatchNFT.ownerOfToken(serialID) == msg.sender, "Only the owner of the token can call this function");
+        uint256 tokenId = luxuryWatchNFT.getTokenFromSerialID(serialID);
+        require(!stolenWatchesRegistry.isStolen(serialID), "Watch is registered as stolen");
         require(listings[tokenId].seller == address(0), "Watch already listed");
-        require(luxurywatchNFT.getApproved(tokenId) == address(this), "Contract is not approved to transfer this token");
+        require(luxuryWatchNFT.getApproved(tokenId) == address(this), "Contract is not approved to transfer this token");
 
-        address _minter = luxurywatchNFT.minterOfToken(serialID);
+        address _minter = luxuryWatchNFT.minterOfToken(serialID);
         uint256 royaltyPercentage = authorizedMinters.getRoyaltyPercentage(_minter);
 
         uint256 _royaltyAmountWEI = 0;
@@ -77,8 +77,8 @@ contract ResellWatch {
 
 
     function cancelListing(string memory serialID) external {
-        require(luxurywatchNFT.ownerOfToken(serialID) == msg.sender, "Only the owner of the token can call this function");
-        uint256 tokenId = luxurywatchNFT.getTokenFromSerialID(serialID);
+        require(luxuryWatchNFT.ownerOfToken(serialID) == msg.sender, "Only the owner of the token can call this function");
+        uint256 tokenId = luxuryWatchNFT.getTokenFromSerialID(serialID);
         require(listings[tokenId].seller == msg.sender, "Not listing owner");
 
         delete listings[tokenId];
@@ -87,8 +87,8 @@ contract ResellWatch {
 
 
     function buyWatch(string memory serialID) external payable {
-        uint256 tokenId = luxurywatchNFT.getTokenFromSerialID(serialID);
-        require(!stolenWatchRegistry.isStolen(serialID), "Watch is registered as stolen");
+        uint256 tokenId = luxuryWatchNFT.getTokenFromSerialID(serialID);
+        require(!stolenWatchesRegistry.isStolen(serialID), "Watch is registered as stolen");
 
         require(listings[tokenId].seller != address(0), "Watch not listed");
         require(listings[tokenId].buyer == msg.sender, "Not Designated Buyer");
@@ -101,34 +101,10 @@ contract ResellWatch {
         (bool sentToMinter, ) = payable(listings[tokenId].minter).call{value: listings[tokenId].royaltyAmount}("");
         require(sentToMinter, "Transfer failed");
 
-        luxurywatchNFT.safeTransferFrom(listings[tokenId].seller, msg.sender, tokenId);
+        luxuryWatchNFT.safeTransferFrom(listings[tokenId].seller, msg.sender, tokenId);
         delete listings[tokenId];
 
         // emit WatchTransferred(tokenId, msg.sender, listings[tokenId].price);
     }
 
 }
-// NOTE: COULD BE AN AREA FOR IMPROVEMENT, ALLOW END USERS TO SEE WHOS SELLING SO WE ARE MORE LIKE A MARKETPLACE AND NOT JUST AN ANTITHEFT
-//     function markSellingInterest(string memory serialID, string memory telegram) onlyOwner(serialID) external {
-//         sellerCounter++;
-//         sellingDetails[sellerCounter] = SellerDetails({
-//             serialID: serialID,
-//             telegram: telegram
-//         });
-//     }
-
-//     function getSellerDetails() onlyOwner(serialID) external view returns (string memory) {
-//         for i in range (1, sellerCounter) {
-//             if bytes(sellingDetails[i].serialID) > 0 {
-//                 return sellingDetails[i].telegram;
-//             }
-//     }
-// }
-
-//   struct SellerDetails {
-//     string serialID;
-//     string telegram;
-// }
-// mapping(uint256 => SellerDetails) public sellingDetails;
-// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
