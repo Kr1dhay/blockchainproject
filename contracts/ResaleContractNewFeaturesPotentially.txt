@@ -168,3 +168,31 @@ contract ResaleContract {
         emit DisputeResolved(listingId, refundBuyer);
     }
 }
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+NOTE: COULD BE AN AREA FOR IMPROVEMENT, ALLOW END USERS TO SEE WHOS SELLING SO WE ARE MORE LIKE A MARKETPLACE AND NOT JUST AN ANTITHEFT
+    function markSellingInterest(string memory serialID, string memory telegram) onlyOwner(serialID) external {
+        sellerCounter++;
+        sellingDetails[sellerCounter] = SellerDetails({
+            serialID: serialID,
+            telegram: telegram
+        });
+    }
+
+    function getSellerDetails() onlyOwner(serialID) external view returns (string memory) {
+        for i in range (1, sellerCounter) {
+            if bytes(sellingDetails[i].serialID) > 0 {
+                return sellingDetails[i].telegram;
+            }
+    }
+}
+
+  struct SellerDetails {
+    string serialID;
+    string telegram;
+}
+mapping(uint256 => SellerDetails) public sellingDetails;
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
