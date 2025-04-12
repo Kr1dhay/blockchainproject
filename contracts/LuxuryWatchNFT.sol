@@ -16,7 +16,7 @@ contract LuxuryWatchNFT is ERC721URIStorage {
     mapping(uint256 => address) private tokenIDtoMinter;
 
     event TokenMinted(address indexed minter, address indexed to, string serialID);
-    event TokenDestroyed(uint256 indexed tokenId);
+    event TokenDestroyed(string serialID);
 
     constructor(address authorizedMintersAddress) ERC721("LuxuryWatchNFT", "LWNFT") {
         authorizedMinters = AuthorizedMinters(authorizedMintersAddress);
@@ -67,7 +67,7 @@ contract LuxuryWatchNFT is ERC721URIStorage {
         _burn(tokenId); // ERC721's built in function
         delete tokenIDtoMinter[tokenId];
         delete serialIDtoTokenID[serialID];
-        emit TokenDestroyed(tokenId);
+        emit TokenDestroyed(serialID);
     }
 
 
