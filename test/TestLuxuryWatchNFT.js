@@ -46,6 +46,7 @@ describe("LuxuryWatchNFT", function () {
     }
     );
 
+
     describe("Burning", function () {
 
         it("should fail to burn if called by someone other than the original minter", async function () {
@@ -67,8 +68,6 @@ describe("LuxuryWatchNFT", function () {
         });
 
     });
-
-    // describe("")
 
 
 });
