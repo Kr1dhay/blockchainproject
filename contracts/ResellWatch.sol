@@ -15,7 +15,7 @@ contract ResellWatch {
     uint256 private sellerCounter;
 
 
-    event WatchListed(string serialID, address indexed seller, address indexed buyer, uint256 price);
+    event WatchListed(string serialID, address indexed seller, address indexed buyer, uint256 price, uint256 royaltyAmount);
     event WatchDelisted(string serialID, address indexed seller);
     event WatchTransferred(string serialID, address indexed seller, address indexed buyer);
 
@@ -72,7 +72,7 @@ contract ResellWatch {
         });
 
 
-        // emit WatchListed(serialID, msg.sender, _buyer, _priceWEI, _royaltyAmountWEI);
+        emit WatchListed(serialID, msg.sender, _buyer, _priceWEI, _royaltyAmountWEI);
     }
 
 
@@ -82,7 +82,7 @@ contract ResellWatch {
         require(listings[tokenId].seller == msg.sender, "Not listing owner");
 
         delete listings[tokenId];
-        // emit WatchDelisted(serialID, msg.sender);
+        emit WatchDelisted(serialID, msg.sender);
     }
 
 
@@ -104,7 +104,7 @@ contract ResellWatch {
         luxuryWatchNFT.safeTransferFrom(listings[tokenId].seller, msg.sender, tokenId);
         delete listings[tokenId];
 
-        // emit WatchTransferred(tokenId, msg.sender, listings[tokenId].price);
+        emit WatchTransferred(serialID, listings[tokenId].seller, msg.sender);
     }
 
 }
