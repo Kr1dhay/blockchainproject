@@ -11,7 +11,7 @@ describe("LuxuryWatchNFT", function () {
 
     AuthorizedMinters = await ethers.getContractFactory("AuthorizedMinters");
     authorizedMinters = await AuthorizedMinters.connect(contractOwner).deploy();
-    await authorizedMinters.connect(contractOwner).addMinter(minter.address, 500);
+    await authorizedMinters.connect(contractOwner).addMinter(minter.address, "Rolex", "Orchard Road", 500);
 
     LuxuryWatchNFT = await ethers.getContractFactory("LuxuryWatchNFT");
     luxuryWatchNFT = await LuxuryWatchNFT.connect(contractOwner).deploy(await authorizedMinters.getAddress());
