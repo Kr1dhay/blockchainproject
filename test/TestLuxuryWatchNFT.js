@@ -66,8 +66,7 @@ describe("LuxuryWatchNFT", function () {
             await expect(luxuryWatchNFT.ownerOfToken("RLX123456")).to.be.reverted;
         });
 
-    }
-    );
+    });
 
 
 });

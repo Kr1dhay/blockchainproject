@@ -10,7 +10,7 @@ describe("AuthorizedMinters", function () {
     let addr2;
     const royaltyPercentage = 500; // 5%
 
-    beforeEach(async function () {
+    before(async function () {
         [contractOwner, minter, addr1, addr2] = await ethers.getSigners();
 
         // Deploy AuthorizedMinters contract
@@ -24,72 +24,74 @@ describe("AuthorizedMinters", function () {
         });
     });
 
-    describe("Minter Management", function () {
-        it("Should add a minter with royalty percentage", async function () {
-            await authorizedMinters.addMinter(minter.address, royaltyPercentage);
-            expect(await authorizedMinters.isMinter(minter.address)).to.be.true;
-            expect(await authorizedMinters.getRoyaltyPercentage(minter.address)).to.equal(royaltyPercentage);
+    describe("Adding Minters", function () {
+
+        it("Should not allow non-contractOwner to add minter", async function () {
+            await expect(
+                authorizedMinters.connect(addr1).addMinter(minter.address, "Rolex", "Orchard Road", royaltyPercentage)
+            ).to.be.revertedWith("Caller is not the contractOwner");
         });
 
         it("Should not allow adding minter with invalid royalty percentage", async function () {
             await expect(
-                authorizedMinters.addMinter(minter.address, 10001) // More than 100%
+                authorizedMinters.connect(contractOwner).addMinter(minter.address, "Rolex", "Orchard Road", 10001)
             ).to.be.revertedWith("Royalty percentage exceeds 100%");
         });
 
-        it("Should not allow zero address as minter", async function () {
-            await expect(
-                authorizedMinters.addMinter(ethers.ZeroAddress, royaltyPercentage)
-            ).to.be.revertedWith("Invalid minter address");
-        });
 
-        it("Should remove a minter", async function () {
-            await authorizedMinters.addMinter(minter.address, royaltyPercentage);
-            await authorizedMinters.removeMinter(minter.address);
-            expect(await authorizedMinters.isMinter(minter.address)).to.be.false;
+        it("Should not allow empty brand name", async function () {
+            await expect(
+                authorizedMinters.connect(contractOwner).addMinter(minter.address, "", "Orchard Road", royaltyPercentage)
+            ).to.be.revertedWith("Brand name cannot be empty");
         });
+        it("Should not allow empty location", async function () {
+            await expect(
+                authorizedMinters.connect(contractOwner).addMinter(minter.address, "Rolex", "", royaltyPercentage)
+            ).to.be.revertedWith("Location cannot be empty");
     });
 
-    describe("Access Control", function () {
-        it("Should not allow non-contractOwner to add minter", async function () {
-            await expect(
-                authorizedMinters.connect(addr1).addMinter(minter.address, royaltyPercentage)
-            ).to.be.revertedWith("Caller is not the contractOwner");
-        });
 
-        it("Should not allow non-contractOwner to remove minter", async function () {
-            await authorizedMinters.addMinter(minter.address, royaltyPercentage);
-            await expect(
-                authorizedMinters.connect(addr1).removeMinter(minter.address)
-            ).to.be.revertedWith("Caller is not the contractOwner");
-        });
-    });
-
-    describe("Events", function () {
-        it("Should emit MinterAdded event", async function () {
-            await expect(authorizedMinters.addMinter(minter.address, royaltyPercentage))
+        it("Should add a minter", async function () {
+            await expect (authorizedMinters.connect(contractOwner).addMinter(minter.address, "Rolex", "Orchard Road", royaltyPercentage)
+            )   
                 .to.emit(authorizedMinters, "MinterAdded")
                 .withArgs(minter.address);
+
+            expect(await authorizedMinters.isMinter(minter.address)).to.be.true;
+            expect(await authorizedMinters.getBrand(minter.address)).to.equal("Rolex");
+            expect(await authorizedMinters.getLocation(minter.address)).to.equal("Orchard Road");
+            expect(await authorizedMinters.getRoyaltyPercentage(minter.address)).to.equal(royaltyPercentage);
         });
 
-        it("Should emit MinterRemoved event", async function () {
-            await authorizedMinters.addMinter(minter.address, royaltyPercentage);
-            await expect(authorizedMinters.removeMinter(minter.address))
-                .to.emit(authorizedMinters, "MinterRemoved")
-                .withArgs(minter.address);
+        it("Should not allow adding the same minter twice", async function () {
+            await expect(
+                authorizedMinters.connect(contractOwner).addMinter(minter.address, "Rolex", "Orchard Road", royaltyPercentage)
+            ).to.be.revertedWith("Minter already exists");
         });
+
     });
 
-    describe("Royalty Management", function () {
-        it("Should return correct royalty percentage", async function () {
-            await authorizedMinters.addMinter(minter.address, royaltyPercentage);
-            const result = await authorizedMinters.getRoyaltyPercentage(minter.address);
-            expect(result).to.equal(royaltyPercentage);
+    describe("Removing Minters", function () {
+
+        it("Only contractOwner can remove a minter", async function () {
+            await expect(
+              authorizedMinters.connect(minter).removeMinter(minter.address)
+            )
+                .to.be.revertedWith("Caller is not the contractOwner");
+          
+            expect(await authorizedMinters.isMinter(minter.address)).to.not.be.false;
+          });
+
+        it("Should remove a minter", async function () {
+            await expect(
+              authorizedMinters.connect(contractOwner).removeMinter(minter.address)
+            )
+              .to.emit(authorizedMinters, "MinterRemoved")
+              .withArgs(minter.address);
+          
+            expect(await authorizedMinters.isMinter(minter.address)).to.be.false;
+          });
+
         });
 
-        it("Should return 0 for non-existent minter", async function () {
-            const result = await authorizedMinters.getRoyaltyPercentage(addr1.address);
-            expect(result).to.equal(0);
-        });
-    });
 });

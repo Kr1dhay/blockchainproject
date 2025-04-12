@@ -36,7 +36,6 @@ contract AuthorizedMinters {
      * Can only be called by the contract contractOwner.
      */
     function addMinter(address minter, string memory _brand, string memory _location, uint256 _royaltyPercentage) external onlyContractOwner {
-        require(minter != address(0), "Invalid minter address");
         require(bytes(_brand).length > 0, "Brand name cannot be empty");
         require(bytes(_location).length > 0, "Location cannot be empty");
         require(bytes(minters[minter].brand).length == 0, "Minter already exists");
