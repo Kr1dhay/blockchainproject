@@ -6,17 +6,17 @@ contract AuthorizedMinters {
     }
 
     mapping(address => Minter) private minters;
-    address public owner;
+    address public contractOwner;
 
     event MinterAdded(address indexed minter);
     event MinterRemoved(address indexed minter);
 
     constructor () {
-        owner = msg.sender;
+        contractOwner = msg.sender;
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Caller is not the owner");
+        require(msg.sender == contractOwner, "Caller is not the contractOwner");
         _;
     }
 
@@ -31,7 +31,7 @@ contract AuthorizedMinters {
 
     /**
      * @dev Adds a new minter with a specified royalty percentage.
-     * Can only be called by the contract owner.
+     * Can only be called by the contract contractOwner.
      * @param minter The address of the minter to add.
      * @param royaltyPercentage The royalty percentage in basis points.
      */
@@ -45,7 +45,7 @@ contract AuthorizedMinters {
 
     /**
      * @dev Removes an authorized minter.
-     * Can only be called by the contract owner.
+     * Can only be called by the contract contractOwner.
      * @param minter The address of the minter to remove.
      */
     function removeMinter(address minter) external onlyOwner {
@@ -59,7 +59,7 @@ contract AuthorizedMinters {
      * @return The royalty percentage in basis points.
      */
     function getRoyaltyPercentage(address minter) external view returns (uint256) {
-        // TODO: maybe add a check for if either the minter or the owner or the ResaleContract is the caller
+        // TODO: maybe add a check for if either the minter or the contractOwner or the ResaleContract is the caller
         return minters[minter].royaltyPercentage;
     }
 }

@@ -4,23 +4,23 @@ const { ethers } = require("hardhat");
 describe("AuthorizedMinters", function () {
     let AuthorizedMinters;
     let authorizedMinters;
-    let owner;
+    let contractOwner;
     let minter;
     let addr1;
     let addr2;
     const royaltyPercentage = 500; // 5%
 
     beforeEach(async function () {
-        [owner, minter, addr1, addr2] = await ethers.getSigners();
+        [contractOwner, minter, addr1, addr2] = await ethers.getSigners();
 
         // Deploy AuthorizedMinters contract
         AuthorizedMinters = await ethers.getContractFactory("AuthorizedMinters");
-        authorizedMinters = await AuthorizedMinters.connect(owner).deploy();
+        authorizedMinters = await AuthorizedMinters.connect(contractOwner).deploy();
     });
 
     describe("Deployment", function () {
-        it("Should set the right owner", async function () {
-            expect(await authorizedMinters.owner()).to.equal(owner.address);
+        it("Should set the right contractOwner", async function () {
+            expect(await authorizedMinters.contractOwner()).to.equal(contractOwner.address);
         });
     });
 
@@ -51,17 +51,17 @@ describe("AuthorizedMinters", function () {
     });
 
     describe("Access Control", function () {
-        it("Should not allow non-owner to add minter", async function () {
+        it("Should not allow non-contractOwner to add minter", async function () {
             await expect(
                 authorizedMinters.connect(addr1).addMinter(minter.address, royaltyPercentage)
-            ).to.be.revertedWith("Caller is not the owner");
+            ).to.be.revertedWith("Caller is not the contractOwner");
         });
 
-        it("Should not allow non-owner to remove minter", async function () {
+        it("Should not allow non-contractOwner to remove minter", async function () {
             await authorizedMinters.addMinter(minter.address, royaltyPercentage);
             await expect(
                 authorizedMinters.connect(addr1).removeMinter(minter.address)
-            ).to.be.revertedWith("Caller is not the owner");
+            ).to.be.revertedWith("Caller is not the contractOwner");
         });
     });
 

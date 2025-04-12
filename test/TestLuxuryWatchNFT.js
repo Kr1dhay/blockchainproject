@@ -20,15 +20,19 @@ describe("LuxuryWatchNFT", function () {
     AuthorizedMinters = await ethers.getContractFactory("AuthorizedMinters");
     authorizedMinters = await AuthorizedMinters.connect(contractOwner).deploy();
     await authorizedMinters.connect(contractOwner).addMinter(minter.address, 500);
+    const authorizedMintersAddress = await authorizedMinters.getAddress();
+
+
 
     LuxuryWatchNFT = await ethers.getContractFactory("LuxuryWatchNFT");
-    luxuryWatchNFT = await LuxuryWatchNFT.connect(contractOwner).deploy(authorizedMinters.address);
+    luxuryWatchNFT = await LuxuryWatchNFT.connect(contractOwner).deploy(authorizedMintersAddress);
+
 
   });
 
     describe("Deployment", function () {
         it("Should set the right contractOwner", async function () {
-            expect(await luxuryWatchNFT.getContractOwner()).to.equal(contractOwner.address);
+            expect(await luxuryWatchNFT.contractOwner()).to.equal(contractOwner.address);
         });
 
         // it("Should set the authorized minters contract address", async function () {
@@ -37,6 +41,7 @@ describe("LuxuryWatchNFT", function () {
     });
 
 
+});
 
 
 //   describe("Minting", function () {
@@ -127,4 +132,3 @@ describe("LuxuryWatchNFT", function () {
 //       await expect(luxuryWatchNFT.ownerOfToken(nonExistentToken)).to.be.revertedWith("Token does not exist.");
 //     });
 //   });
-});
