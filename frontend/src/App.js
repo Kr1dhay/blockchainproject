@@ -248,11 +248,17 @@ function App() {
     try {
       setStatus(`Getting minter of token: ${userSerialID}...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Minter found (placeholder)!');
+
+      const minterAddress = await luxurywatchnft.minterOfToken(userSerialID);
+      setStatus(`Minter: ${minterAddress}`);
     } catch (error) {
       console.error(error);
       setStatus('Error getting minter of token');
     }
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
+
   };
 
   const handleOwnerOfToken = async () => {
@@ -263,11 +269,18 @@ function App() {
     try {
       setStatus(`Getting owner of token: ${userSerialID}...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Owner found (placeholder)!');
+
+      const ownerAddress = await luxurywatchnft.ownerOfToken(userSerialID);
+      setStatus(`Owner: ${ownerAddress}`);
+
     } catch (error) {
       console.error(error);
       setStatus('Error getting owner of token');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleBurn = async () => {
@@ -276,13 +289,18 @@ function App() {
       return;
     }
     try {
-      setStatus(`Burning token: ${userSerialID}...`);
+      setStatus(`Burning token...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Burned successfully!');
+      await luxurywatchnft.burn(userSerialID);
+      setStatus(`Token burned: ${userSerialID}`);
     } catch (error) {
       console.error(error);
       setStatus('Error burning token');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleApproveListingToken = async () => {
@@ -291,28 +309,37 @@ function App() {
       return;
     }
     try {
-      setStatus(`Approving listing token: ${userSerialID}...`);
+      setStatus(`Approving listing token...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Listing token approved (placeholder)!');
+      await luxurywatchnft.approveListingToken(userSerialID);
+      setStatus(`Listing token approved: ${userSerialID}`);
     } catch (error) {
       console.error(error);
       setStatus('Error approving listing token');
     }
-  };
 
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
+  };
   const handleFlagAsStolen = async () => {
     if (!userSerialID) {
       setStatus('Please enter a serialID first');
       return;
     }
     try {
-      setStatus(`Flagging as stolen: ${userSerialID}...`);
+      setStatus(`Flagging as stolen...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Flagged as stolen (placeholder)!');
+      await stolenWatchesRegistry.flagAsStolen(userSerialID);
+      setStatus(`Flagged as stolen: ${userSerialID}`);
     } catch (error) {
       console.error(error);
       setStatus('Error flagging as stolen');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleUnflagAsStolen = async () => {
@@ -321,13 +348,18 @@ function App() {
       return;
     }
     try {
-      setStatus(`Unflagging as stolen: ${userSerialID}...`);
+      setStatus(`Unflagging as stolen...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Unflagged as stolen (placeholder)!');
+      await stolenWatchesRegistry.unflagAsStolen(userSerialID);
+      setStatus(`Unflagged as stolen: ${userSerialID}`);
     } catch (error) {
       console.error(error);
       setStatus('Error unflagging as stolen');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleIsStolen = async () => {
@@ -338,12 +370,60 @@ function App() {
     try {
       setStatus(`Checking if stolen: ${userSerialID}...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Token is / is not stolen (placeholder)!');
+      const isStolen = await stolenWatchesRegistry.isStolen(userSerialID);
+      setStatus(`Token ${userSerialID} is ${isStolen ? 'stolen' : 'not stolen'}`);
     } catch (error) {
       console.error(error);
       setStatus('Error checking stolen status');
     }
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
+
+  const handleCancelListing = async () => {
+    if (!userSerialID) {
+      setStatus('Please enter a serialID first');
+      return;
+    }
+    try {
+      setStatus(`Canceling listing...`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await resellWatch.cancelListing(userSerialID);
+      setStatus(`Listing canceled: ${userSerialID}`);
+    } catch (error) {
+      console.error(error);
+      setStatus('Error canceling listing');
+    }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
+  };
+
+  const handleBuyWatch = async () => {
+    if (!userSerialID) {
+      setStatus('Please enter a serialID first');
+      return;
+    }
+  
+    try {
+      setStatus(`Buying watch ${userSerialID}...`);
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // const buyWatchWEI = await resellWatch.getPriceForWatch(userSerialID);
+      // const buyWatchWEI = toBigInt(price);
+  
+      const tx = await resellWatch.buyWatch(userSerialID, { value: 500 });
+      await tx.wait();
+  
+      setStatus(`Successfully purchased watch with ${500} WEI!`);
+    } catch (error) {
+      console.error('Buy watch error:', error);
+      setStatus('Error buying watch');
+    }
+  };
+  
 
   // listWatch needs: string memory serialID, uint256 _priceWEI, address _buyer
   const handleListWatch = async () => {
@@ -366,48 +446,19 @@ function App() {
 
     try {
       setStatus(`Listing watch: serialID=${userSerialID}, price=${listPriceWEI}, buyer=${listBuyer}`);
-      // Example contract call:
-      // await resellWatch.listWatch(userSerialID, priceWei, listBuyer);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus(`Watch listed (placeholder)!`);
+      await resellWatch.listWatch(userSerialID, listPriceWEI, listBuyer);
+      setStatus(`Watch listed!`);
       
-      // Clear extra fields if desired
-      // setListPriceWEI('');
-      // setListBuyer('');
+
     } catch (error) {
       console.error(error);
       setStatus('Error listing watch');
     }
-  };
 
-  const handleCancelListing = async () => {
-    if (!userSerialID) {
-      setStatus('Please enter a serialID first');
-      return;
-    }
-    try {
-      setStatus(`Canceling listing: ${userSerialID}...`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Listing canceled (placeholder)!');
-    } catch (error) {
-      console.error(error);
-      setStatus('Error canceling listing');
-    }
-  };
-
-  const handleBuyWatch = async () => {
-    if (!userSerialID) {
-      setStatus('Please enter a serialID first');
-      return;
-    }
-    try {
-      setStatus(`Buying watch: ${userSerialID}...`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Watch purchased (placeholder)!');
-    } catch (error) {
-      console.error(error);
-      setStatus('Error buying watch');
-    }
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   // ------------------------
