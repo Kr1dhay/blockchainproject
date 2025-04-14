@@ -192,9 +192,8 @@ function App() {
     }
     try {
       setStatus('Removing minter...');
-      // Real call example:
-      // await authorizedMinters.removeMinter(ownerFormAddress);
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      await authorizedMinters.removeMinter(ownerFormAddress);
       setStatus(`Minter removed! Address: ${ownerFormAddress}`);
 
       // Clear fields
@@ -222,9 +221,8 @@ function App() {
     }
     try {
       setStatus('Minting...');
-      // Example real call:
-      // await luxurywatchnft.mint(mintTo, mintSerialID, mintURI);
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      await luxurywatchnft.mint(mintTo, mintSerialID, mintURI);
       setStatus(`Minted successfully! to=${mintTo}, id=${mintSerialID}`);
 
       // Clear fields
@@ -236,28 +234,11 @@ function App() {
       setStatus('Error minting');
     }
   };
-
   // ------------------------------------
   //  5) USER-ONLY FUNCTIONS
   // ------------------------------------
   // All user functions require a serialID
   // plus listWatch needs 2 more fields: uint256 _priceWEI, address _buyer
-  const handleGetTokenFromSerialID = async () => {
-    if (!userSerialID) {
-      setStatus('Please enter a serialID first');
-      return;
-    }
-    try {
-      setStatus(`Getting token from serial ID: ${userSerialID}...`);
-      // Example:
-      // await stolenWatchesRegistry.getTokenFromSerialID(userSerialID);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Token fetched successfully (placeholder)!');
-    } catch (error) {
-      console.error(error);
-      setStatus('Error getting token from serial ID');
-    }
-  };
 
   const handleMinterOfToken = async () => {
     if (!userSerialID) {
