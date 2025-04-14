@@ -414,7 +414,7 @@ function App() {
       // const buyWatchWEI = await resellWatch.getPriceForWatch(userSerialID);
       // const buyWatchWEI = toBigInt(price);
   
-      const tx = await resellWatch.buyWatch(userSerialID, { value: 500 });
+      const tx = await resellWatch.buyWatch(userSerialID, { value: 50000000000000000 });
       await tx.wait();
   
       setStatus(`Successfully purchased watch with ${500} WEI!`);
