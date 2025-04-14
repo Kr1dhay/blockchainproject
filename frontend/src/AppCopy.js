@@ -49,10 +49,11 @@ function App() {
   const [userSerialID, setUserSerialID] = useState('');
 
   // ------------------
-  //  Fields Specific to listWatch
+  //  Fields Specific to listWatch and buyWatch
   // ------------------
   const [listPriceWEI, setListPriceWEI] = useState('');
   const [listBuyer, setListBuyer] = useState('');
+  
 
   // ------------------
   //  1) ACCOUNT CHANGES LISTENER
@@ -137,9 +138,17 @@ function App() {
       setAuthorizedMinters(AuthorizedMintersInstance);
       setStolenWatchesRegistry(StolenWatchesRegistryInstance);
       setResellWatch(ResellWatchInstance);
-
+      let ownerAddress;
       // Check role
-      const ownerAddress = await LuxuryWatchNFTInstance.contractOwner();
+      // const ownerAddress = await LuxuryWatchNFTInstance.contractOwner();
+      try {
+        const ownerAddress = await LuxuryWatchNFTInstance.contractOwner();
+        console.log("contractOwner:", ownerAddress);
+      } catch (err) {
+        console.error("Error calling contractOwner():", err);
+        setStatus("Error verifying owner role — check ABI and contract address");
+      }
+
       if (selectedAccount.toLowerCase() === ownerAddress.toLowerCase()) {
         setTypeOfConnection("Owner");
       } else if (await AuthorizedMintersInstance.isMinter(selectedAccount.toLowerCase())) {
@@ -174,6 +183,7 @@ function App() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await authorizedMinters.addMinter(ownerFormAddress, ownerFormBrand, ownerFormLocation, numericVal);
       setStatus(`Minter approved! Address: ${ownerFormAddress}`);
+
       // Clear fields
       setOwnerFormAddress('');
       setOwnerFormBrand('');
@@ -192,9 +202,8 @@ function App() {
     }
     try {
       setStatus('Removing minter...');
-      // Real call example:
-      // await authorizedMinters.removeMinter(ownerFormAddress);
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      await authorizedMinters.removeMinter(ownerFormAddress);
       setStatus(`Minter removed! Address: ${ownerFormAddress}`);
 
       // Clear fields
@@ -222,9 +231,8 @@ function App() {
     }
     try {
       setStatus('Minting...');
-      // Example real call:
-      // await luxurywatchnft.mint(mintTo, mintSerialID, mintURI);
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      await luxurywatchnft.mint(mintTo, mintSerialID, mintURI);
       setStatus(`Minted successfully! to=${mintTo}, id=${mintSerialID}`);
 
       // Clear fields
@@ -242,22 +250,6 @@ function App() {
   // ------------------------------------
   // All user functions require a serialID
   // plus listWatch needs 2 more fields: uint256 _priceWEI, address _buyer
-  const handleGetTokenFromSerialID = async () => {
-    if (!userSerialID) {
-      setStatus('Please enter a serialID first');
-      return;
-    }
-    try {
-      setStatus(`Getting token from serial ID: ${userSerialID}...`);
-      // Example:
-      // await stolenWatchesRegistry.getTokenFromSerialID(userSerialID);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Token fetched successfully (placeholder)!');
-    } catch (error) {
-      console.error(error);
-      setStatus('Error getting token from serial ID');
-    }
-  };
 
   const handleMinterOfToken = async () => {
     if (!userSerialID) {
@@ -267,11 +259,17 @@ function App() {
     try {
       setStatus(`Getting minter of token: ${userSerialID}...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Minter found (placeholder)!');
+
+      const minterAddress = await luxurywatchnft.minterOfToken(userSerialID);
+      setStatus(`Minter: ${minterAddress}`);
     } catch (error) {
       console.error(error);
       setStatus('Error getting minter of token');
     }
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
+
   };
 
   const handleOwnerOfToken = async () => {
@@ -282,11 +280,18 @@ function App() {
     try {
       setStatus(`Getting owner of token: ${userSerialID}...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Owner found (placeholder)!');
+
+      const ownerAddress = await luxurywatchnft.ownerOfToken(userSerialID);
+      setStatus(`Owner: ${ownerAddress}`);
+
     } catch (error) {
       console.error(error);
       setStatus('Error getting owner of token');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleBurn = async () => {
@@ -295,13 +300,18 @@ function App() {
       return;
     }
     try {
-      setStatus(`Burning token: ${userSerialID}...`);
+      setStatus(`Burning token...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Burned successfully!');
+      await luxurywatchnft.burn(userSerialID);
+      setStatus(`Token burned: ${userSerialID}`);
     } catch (error) {
       console.error(error);
       setStatus('Error burning token');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleApproveListingToken = async () => {
@@ -310,13 +320,18 @@ function App() {
       return;
     }
     try {
-      setStatus(`Approving listing token: ${userSerialID}...`);
+      setStatus(`Approving listing token...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Listing token approved (placeholder)!');
+      await luxurywatchnft.approveListingToken(userSerialID);
+      setStatus(`Listing token approved: ${userSerialID}`);
     } catch (error) {
       console.error(error);
       setStatus('Error approving listing token');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleFlagAsStolen = async () => {
@@ -325,13 +340,18 @@ function App() {
       return;
     }
     try {
-      setStatus(`Flagging as stolen: ${userSerialID}...`);
+      setStatus(`Flagging as stolen...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Flagged as stolen (placeholder)!');
+      await stolenWatchesRegistry.flagAsStolen(userSerialID);
+      setStatus(`Flagged as stolen: ${userSerialID}`);
     } catch (error) {
       console.error(error);
       setStatus('Error flagging as stolen');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleUnflagAsStolen = async () => {
@@ -340,13 +360,18 @@ function App() {
       return;
     }
     try {
-      setStatus(`Unflagging as stolen: ${userSerialID}...`);
+      setStatus(`Unflagging as stolen...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Unflagged as stolen (placeholder)!');
+      await stolenWatchesRegistry.unflagAsStolen(userSerialID);
+      setStatus(`Unflagged as stolen: ${userSerialID}`);
     } catch (error) {
       console.error(error);
       setStatus('Error unflagging as stolen');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
   const handleIsStolen = async () => {
@@ -357,12 +382,60 @@ function App() {
     try {
       setStatus(`Checking if stolen: ${userSerialID}...`);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Token is / is not stolen (placeholder)!');
+      const isStolen = await stolenWatchesRegistry.isStolen(userSerialID);
+      setStatus(`Token ${userSerialID} is ${isStolen ? 'stolen' : 'not stolen'}`);
     } catch (error) {
       console.error(error);
       setStatus('Error checking stolen status');
     }
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
+
+  const handleCancelListing = async () => {
+    if (!userSerialID) {
+      setStatus('Please enter a serialID first');
+      return;
+    }
+    try {
+      setStatus(`Canceling listing...`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await resellWatch.cancelListing(userSerialID);
+      setStatus(`Listing canceled: ${userSerialID}`);
+    } catch (error) {
+      console.error(error);
+      setStatus('Error canceling listing');
+    }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
+  };
+
+  const handleBuyWatch = async () => {
+    if (!userSerialID) {
+      setStatus('Please enter a serialID first');
+      return;
+    }
+  
+    try {
+      setStatus(`Buying watch ${userSerialID}...`);
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // const buyWatchWEI = await resellWatch.getPriceForWatch(userSerialID);
+      // const buyWatchWEI = toBigInt(price);
+  
+      const tx = await resellWatch.buyWatch(userSerialID, { value: 500 });
+      await tx.wait();
+  
+      setStatus(`Successfully purchased watch with ${500} WEI!`);
+    } catch (error) {
+      console.error('Buy watch error:', error);
+      setStatus('Error buying watch');
+    }
+  };
+  
 
   // listWatch needs: string memory serialID, uint256 _priceWEI, address _buyer
   const handleListWatch = async () => {
@@ -385,56 +458,28 @@ function App() {
 
     try {
       setStatus(`Listing watch: serialID=${userSerialID}, price=${listPriceWEI}, buyer=${listBuyer}`);
-      // Example contract call:
-      // await resellWatch.listWatch(userSerialID, priceWei, listBuyer);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus(`Watch listed (placeholder)!`);
+      await resellWatch.listWatch(userSerialID, listPriceWEI, listBuyer);
+      setStatus(`Watch listed!`);
       
-      // Clear extra fields if desired
-      // setListPriceWEI('');
-      // setListBuyer('');
+
     } catch (error) {
       console.error(error);
       setStatus('Error listing watch');
     }
+
+    setUserSerialID('');
+    setListPriceWEI('');
+    setListBuyer('');
   };
 
-  const handleCancelListing = async () => {
-    if (!userSerialID) {
-      setStatus('Please enter a serialID first');
-      return;
-    }
-    try {
-      setStatus(`Canceling listing: ${userSerialID}...`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Listing canceled (placeholder)!');
-    } catch (error) {
-      console.error(error);
-      setStatus('Error canceling listing');
-    }
-  };
-
-  const handleBuyWatch = async () => {
-    if (!userSerialID) {
-      setStatus('Please enter a serialID first');
-      return;
-    }
-    try {
-      setStatus(`Buying watch: ${userSerialID}...`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatus('Watch purchased (placeholder)!');
-    } catch (error) {
-      console.error(error);
-      setStatus('Error buying watch');
-    }
-  };
 
   // ------------------------
   //  6) RENDER THE UI
   // ------------------------
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Local dApp Frontend</h1>
+      <h1>Luxury Watch NFT Authentication Platform</h1>
 
       {/* If no account, show Connect button */}
       {!account ? (
@@ -493,7 +538,7 @@ function App() {
                 <br />
 
                 <label>
-                  Number (0-10000):
+                  Comission Fee (in Basis Points):
                   <input
                     type="number"
                     min="0"
@@ -555,7 +600,19 @@ function App() {
 
               <h2>User Functions</h2>
               {/* Common Serial ID for all user calls */}
-              <div style={{ marginBottom: '10px' }}>
+        
+              <button onClick={handleMinterOfToken}>minterOfToken</button>
+              <button onClick={handleOwnerOfToken}>ownerOfToken</button>
+              <button onClick={handleBurn}>burn</button>
+              <button onClick={handleApproveListingToken}>approveListingToken</button>
+              <button onClick={handleFlagAsStolen}>flagAsStolen</button>
+              <button onClick={handleUnflagAsStolen}>unflagAsStolen</button>
+              <button onClick={handleIsStolen}>isStolen</button>
+              <button onClick={handleCancelListing}> cancelListing</button>
+              <button onClick={handleBuyWatch}> buyWatch </button>
+
+
+              <div style={{ marginTop: '10px' }}>
                 <label>
                   Serial ID:
                   <input
@@ -566,15 +623,9 @@ function App() {
                   />
                 </label>
               </div>
-              <button onClick={handleMinterOfToken}>minterOfToken</button>
-              <button onClick={handleOwnerOfToken}>ownerOfToken</button>
-              <button onClick={handleBurn}>burn</button>
-              <button onClick={handleApproveListingToken}>approveListingToken</button>
-              <button onClick={handleFlagAsStolen}>flagAsStolen</button>
-              <button onClick={handleUnflagAsStolen}>unflagAsStolen</button>
-              <button onClick={handleIsStolen}>isStolen</button>
               
               {/* listWatch needs 2 more fields */}
+
               <div style={{ marginTop: '10px' }}>
                 <h3>List Watch</h3>
                 <label>
@@ -599,13 +650,6 @@ function App() {
                 <br />
                 <button onClick={handleListWatch}>listWatch</button>
               </div>
-
-              <button onClick={handleCancelListing} style={{ marginTop: '10px' }}>
-                cancelListing
-              </button>
-              <button onClick={handleBuyWatch} style={{ marginLeft: '10px' }}>
-                buyWatch
-              </button>
             </div>
           )}
 
@@ -632,12 +676,15 @@ function App() {
               <button onClick={handleFlagAsStolen}>flagAsStolen</button>
               <button onClick={handleUnflagAsStolen}>unflagAsStolen</button>
               <button onClick={handleIsStolen}>isStolen</button>
+              <button onClick={handleCancelListing}> cancelListing</button>
+              <button onClick={handleBuyWatch}> buyWatch </button>
+
 
               {/* listWatch fields */}
               <div style={{ marginTop: '10px' }}>
                 <h3>List Watch</h3>
                 <label>
-                  Price (WEI):
+                  Price in WEI (For Selling):
                   <input
                     type="text"
                     value={listPriceWEI}
@@ -647,7 +694,7 @@ function App() {
                 </label>
                 <br />
                 <label>
-                  Buyer Address:
+                  Buyer Address (For Selling):
                   <input
                     type="text"
                     value={listBuyer}
@@ -657,14 +704,9 @@ function App() {
                 </label>
                 <br />
                 <button onClick={handleListWatch}>listWatch</button>
+
               </div>
 
-              <button onClick={handleCancelListing} style={{ marginTop: '10px' }}>
-                cancelListing
-              </button>
-              <button onClick={handleBuyWatch} style={{ marginLeft: '10px' }}>
-                buyWatch
-              </button>
             </div>
           )}
         </>
