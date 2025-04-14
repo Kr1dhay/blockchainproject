@@ -1,6 +1,6 @@
 // frontend/src/App.js
 import React, { useState, useEffect } from 'react';
-import { BrowserProvider, Contract } from 'ethers';
+import { BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
 
 // Import deployed contract addresses
 import contractAddresses from './contract-addresses.json';
@@ -51,7 +51,7 @@ function App() {
   // ------------------
   //  Fields Specific to listWatch
   // ------------------
-  const [listPriceWEI, setListPriceWEI] = useState('');
+  const [listPriceETH, setListPriceETH] = useState('');
   const [listBuyer, setListBuyer] = useState('');
 
   // ------------------
@@ -238,7 +238,7 @@ function App() {
   //  5) USER-ONLY FUNCTIONS
   // ------------------------------------
   // All user functions require a serialID
-  // plus listWatch needs 2 more fields: uint256 _priceWEI, address _buyer
+  // plus listWatch needs 2 more fields: uint256 _priceETH, address _buyer
 
   const handleMinterOfToken = async () => {
     if (!userSerialID) {
@@ -256,7 +256,7 @@ function App() {
       setStatus('Error getting minter of token');
     }
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
 
   };
@@ -279,7 +279,7 @@ function App() {
     }
 
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
   };
 
@@ -299,7 +299,7 @@ function App() {
     }
 
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
   };
 
@@ -319,7 +319,7 @@ function App() {
     }
 
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
   };
   const handleFlagAsStolen = async () => {
@@ -338,7 +338,7 @@ function App() {
     }
 
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
   };
 
@@ -358,7 +358,7 @@ function App() {
     }
 
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
   };
 
@@ -377,7 +377,7 @@ function App() {
       setStatus('Error checking stolen status');
     }
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
   };
 
@@ -397,7 +397,7 @@ function App() {
     }
 
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
   };
 
@@ -411,13 +411,14 @@ function App() {
       setStatus(`Buying watch ${userSerialID}...`);
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      // const buyWatchWEI = await resellWatch.getPriceForWatch(userSerialID);
-      // const buyWatchWEI = toBigInt(price);
-  
-      const tx = await resellWatch.buyWatch(userSerialID, { value: 50000000000000000 });
+      // const buyWatchETH = await resellWatch.getPriceForWatch(userSerialID);
+      const buyWatchETH = 1;
+      const buyWatchWEI = parseEther(buyWatchETH.toString());
+      
+      const tx = await resellWatch.buyWatch(userSerialID, { value: buyWatchWEI });
       await tx.wait();
   
-      setStatus(`Successfully purchased watch with ${500} WEI!`);
+      setStatus(`Successfully purchased watch with ${500} ETH!`);
     } catch (error) {
       console.error('Buy watch error:', error);
       setStatus('Error buying watch');
@@ -425,15 +426,15 @@ function App() {
   };
   
 
-  // listWatch needs: string memory serialID, uint256 _priceWEI, address _buyer
+  // listWatch needs: string memory serialID, uint256 _priceETH, address _buyer
   const handleListWatch = async () => {
     // Validate serialID + 2 extra fields
     if (!userSerialID) {
       setStatus('Please enter a serialID for listWatch');
       return;
     }
-    if (!listPriceWEI) {
-      setStatus('Please enter a price in WEI for listWatch');
+    if (!listPriceETH) {
+      setStatus('Please enter a price in ETH for listWatch');
       return;
     }
     if (!listBuyer) {
@@ -442,12 +443,13 @@ function App() {
     }
 
     // You may want to parse the price to a BigNumber with `ethers.parseUnits` if needed
-    // e.g. let priceWei = BigInt(listPriceWEI);
+    // e.g. let priceETH = BigInt(listPriceETH);
 
     try {
-      setStatus(`Listing watch: serialID=${userSerialID}, price=${listPriceWEI}, buyer=${listBuyer}`);
+      setStatus(`Listing watch: serialID=${userSerialID}, price=${listPriceETH}, buyer=${listBuyer}`);
+      const priceWei = parseEther(listPriceETH);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      await resellWatch.listWatch(userSerialID, listPriceWEI, listBuyer);
+      await resellWatch.listWatch(userSerialID, priceWei, listBuyer);
       setStatus(`Watch listed!`);
       
 
@@ -457,7 +459,7 @@ function App() {
     }
 
     setUserSerialID('');
-    setListPriceWEI('');
+    setListPriceETH('');
     setListBuyer('');
   };
 
@@ -616,11 +618,11 @@ function App() {
               <div style={{ marginTop: '10px' }}>
                 <h3>List Watch</h3>
                 <label>
-                  Price (WEI):
+                  Price (ETH):
                   <input
                     type="text"
-                    value={listPriceWEI}
-                    onChange={(e) => setListPriceWEI(e.target.value)}
+                    value={listPriceETH}
+                    onChange={(e) => setListPriceETH(e.target.value)}
                     style={{ marginLeft: '10px', marginRight: '10px' }}
                   />
                 </label>
@@ -671,11 +673,11 @@ function App() {
               <div style={{ marginTop: '10px' }}>
                 <h3>List Watch</h3>
                 <label>
-                  Price in WEI (For Selling):
+                  Price in ETH (For Selling):
                   <input
                     type="text"
-                    value={listPriceWEI}
-                    onChange={(e) => setListPriceWEI(e.target.value)}
+                    value={listPriceETH}
+                    onChange={(e) => setListPriceETH(e.target.value)}
                     style={{ marginLeft: '10px', marginRight: '10px' }}
                   />
                 </label>
