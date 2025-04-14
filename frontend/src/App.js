@@ -1,6 +1,6 @@
 // frontend/src/App.js
 import React, { useState, useEffect } from 'react';
-import { BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
+import { BrowserProvider, Contract, parseEther, formatEther} from 'ethers';
 
 // Import deployed contract addresses
 import contractAddresses from './contract-addresses.json';
@@ -411,14 +411,13 @@ function App() {
       setStatus(`Buying watch ${userSerialID}...`);
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      // const buyWatchETH = await resellWatch.getPriceForWatch(userSerialID);
-      const buyWatchETH = 1;
+      const buyWatchETH = formatEther(await resellWatch.getListingPriceandComission(userSerialID));
       const buyWatchWEI = parseEther(buyWatchETH.toString());
       
       const tx = await resellWatch.buyWatch(userSerialID, { value: buyWatchWEI });
       await tx.wait();
   
-      setStatus(`Successfully purchased watch with ${500} ETH!`);
+      setStatus(`Successfully purchased watch with ${buyWatchETH} ETH!`);
     } catch (error) {
       console.error('Buy watch error:', error);
       setStatus('Error buying watch');

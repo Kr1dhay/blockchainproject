@@ -85,6 +85,12 @@ contract ResellWatch {
         emit WatchDelisted(serialID, msg.sender);
     }
 
+    function getListingPriceandComission(string memory serialID) external view returns (uint256) {
+        uint256 tokenId = luxuryWatchNFT.getTokenFromSerialID(serialID);
+        require(listings[tokenId].seller != address(0), "Watch not listed");
+        return listings[tokenId].price + listings[tokenId].royaltyAmount;
+    }
+
 
     function buyWatch(string memory serialID) external payable {
         uint256 tokenId = luxuryWatchNFT.getTokenFromSerialID(serialID);
