@@ -64,14 +64,6 @@ To execute all test scripts inside the `test/` directory:
 npx hardhat test
 ```
 
-### **Deploy to a Test Network (Optional)**
-If you want to deploy your contracts to a testnet like **Goerli**, update `hardhat.config.js` and run:
-```sh
-npx hardhat run scripts/deploy.js --network goerli
-```
-(Note: This requires API keys, which are not included in this setup.)
-
----
 
 ## **Troubleshooting**
 
