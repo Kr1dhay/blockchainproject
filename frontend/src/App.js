@@ -461,12 +461,12 @@ function App() {
     setListBuyer('');
   };
 
-  // ------------------------
+   // ------------------------
   //  6) RENDER THE UI
   // ------------------------
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Local dApp Frontend</h1>
+      <h1>Luxury Watch NFT Authentication Platform</h1>
 
       {/* If no account, show Connect button */}
       {!account ? (
@@ -525,7 +525,7 @@ function App() {
                 <br />
 
                 <label>
-                  Number (0-10000):
+                  Comission Fee (in Basis Points):
                   <input
                     type="number"
                     min="0"
@@ -587,7 +587,19 @@ function App() {
 
               <h2>User Functions</h2>
               {/* Common Serial ID for all user calls */}
-              <div style={{ marginBottom: '10px' }}>
+        
+              <button onClick={handleMinterOfToken}>minterOfToken</button>
+              <button onClick={handleOwnerOfToken}>ownerOfToken</button>
+              <button onClick={handleBurn}>burn</button>
+              <button onClick={handleApproveListingToken}>approveListingToken</button>
+              <button onClick={handleFlagAsStolen}>flagAsStolen</button>
+              <button onClick={handleUnflagAsStolen}>unflagAsStolen</button>
+              <button onClick={handleIsStolen}>isStolen</button>
+              <button onClick={handleCancelListing}> cancelListing</button>
+              <button onClick={handleBuyWatch}> buyWatch </button>
+
+
+              <div style={{ marginTop: '10px' }}>
                 <label>
                   Serial ID:
                   <input
@@ -598,15 +610,9 @@ function App() {
                   />
                 </label>
               </div>
-              <button onClick={handleMinterOfToken}>minterOfToken</button>
-              <button onClick={handleOwnerOfToken}>ownerOfToken</button>
-              <button onClick={handleBurn}>burn</button>
-              <button onClick={handleApproveListingToken}>approveListingToken</button>
-              <button onClick={handleFlagAsStolen}>flagAsStolen</button>
-              <button onClick={handleUnflagAsStolen}>unflagAsStolen</button>
-              <button onClick={handleIsStolen}>isStolen</button>
               
               {/* listWatch needs 2 more fields */}
+
               <div style={{ marginTop: '10px' }}>
                 <h3>List Watch</h3>
                 <label>
@@ -631,13 +637,6 @@ function App() {
                 <br />
                 <button onClick={handleListWatch}>listWatch</button>
               </div>
-
-              <button onClick={handleCancelListing} style={{ marginTop: '10px' }}>
-                cancelListing
-              </button>
-              <button onClick={handleBuyWatch} style={{ marginLeft: '10px' }}>
-                buyWatch
-              </button>
             </div>
           )}
 
@@ -664,12 +663,15 @@ function App() {
               <button onClick={handleFlagAsStolen}>flagAsStolen</button>
               <button onClick={handleUnflagAsStolen}>unflagAsStolen</button>
               <button onClick={handleIsStolen}>isStolen</button>
+              <button onClick={handleCancelListing}> cancelListing</button>
+              <button onClick={handleBuyWatch}> buyWatch </button>
+
 
               {/* listWatch fields */}
               <div style={{ marginTop: '10px' }}>
                 <h3>List Watch</h3>
                 <label>
-                  Price (WEI):
+                  Price in WEI (For Selling):
                   <input
                     type="text"
                     value={listPriceWEI}
@@ -679,7 +681,7 @@ function App() {
                 </label>
                 <br />
                 <label>
-                  Buyer Address:
+                  Buyer Address (For Selling):
                   <input
                     type="text"
                     value={listBuyer}
@@ -689,14 +691,9 @@ function App() {
                 </label>
                 <br />
                 <button onClick={handleListWatch}>listWatch</button>
+
               </div>
 
-              <button onClick={handleCancelListing} style={{ marginTop: '10px' }}>
-                cancelListing
-              </button>
-              <button onClick={handleBuyWatch} style={{ marginLeft: '10px' }}>
-                buyWatch
-              </button>
             </div>
           )}
         </>
