@@ -22,19 +22,12 @@ contract AuthorizedMinters {
         _;
     }
 
-    /**
-     * @dev Check if minter exists.
-     * @param minter The address of the minter to check.
-     * @return True if the minted exists, false otherwise.
-     */
     function isMinter(address minter) external view returns (bool) {
         return bytes(minters[minter].brand).length > 0;
     }
 
-    /**
-     * @dev Adds a new minter with a specified royalty percentage.
-     * Can only be called by the contract contractOwner.
-     */
+     // Adds a new minter with a specified royalty percentage.
+     // Can only be called by the contractOwner.
     function addMinter(address minter, string memory _brand, string memory _location, uint256 _royaltyPercentage) external onlyContractOwner {
         require(bytes(_brand).length > 0, "Brand name cannot be empty");
         require(bytes(_location).length > 0, "Location cannot be empty");
@@ -45,10 +38,11 @@ contract AuthorizedMinters {
         emit MinterAdded(minter);
     }
 
-    /**
-     * @dev Removes an authorized minter.
-     */
+
+    // Removes a minter 
+    // Can only be called by the contractOwner.
     function removeMinter(address minter) external onlyContractOwner {
+        require(bytes(minters[minter].brand).length != 0, "Minter does not exist");
         delete minters[minter];
         emit MinterRemoved(minter);
     }

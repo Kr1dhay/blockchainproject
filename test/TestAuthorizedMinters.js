@@ -13,7 +13,6 @@ describe("AuthorizedMinters", function () {
     before(async function () {
         [contractOwner, minter, addr1, addr2] = await ethers.getSigners();
 
-        // Deploy AuthorizedMinters contract
         AuthorizedMinters = await ethers.getContractFactory("AuthorizedMinters");
         authorizedMinters = await AuthorizedMinters.connect(contractOwner).deploy();
     });

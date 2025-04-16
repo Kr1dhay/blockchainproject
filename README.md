@@ -7,7 +7,7 @@ Everyone else can use them with simply npm install
 Pushing to main directly is disabled, create branch from main then merge back in when ready 
 
 
-### Initial Setup 
+### Setup 
 
 ### **1. Clone the Repository**
 
@@ -34,31 +34,21 @@ This compiles all Solidity smart contracts inside the `contracts/` folder.
 ### **5. Deploy Contracts (Locally)**
 Run the deployment script:
 ```sh
-npx hardhat run scripts/deploy.js --network hardhat
+npx hardhat run scripts/deploy.js --network localhost
 ```
 This will deploy the smart contracts to the local Hardhat blockchain.
 
+### **6. Deploy Frontend**
+
+```sh
+cd frontend
+npm start
+```
+This will start the frontend application locally to interact with the deployed smart contracts.
 ---
 
-## **Project Structure**
-```
-blockchain/
-│── contracts/          # Smart contracts (.sol files)
-│── scripts/            # Deployment scripts
-│── test/               # Test scripts for smart contracts
-│── artifacts/          # Compiled contract artifacts (auto-generated)
-│── cache/              # Hardhat cache (auto-generated)
-│── hardhat.config.js   # Hardhat configuration file
-│── package.json        # Node.js package dependencies
-│── .gitignore          # Files to ignore in Git
-│── README.md           # Project documentation
-```
 
----
-
-## **Additional Commands**
-
-### **Run Tests**
+### **7 Run Tests**
 To execute all test scripts inside the `test/` directory:
 ```sh
 npx hardhat test
@@ -67,19 +57,7 @@ npx hardhat test
 
 ## **Troubleshooting**
 
-### **1. Command `nvm use` Not Found**
-If you see `zsh: command not found: nvm`, install NVM:
-```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
-source ~/.zshrc  # or source ~/.bashrc if using Bash
-```
-Then, retry:
-```sh
-nvm install 18
-nvm use 18
-```
-
-### **2. Hardhat Not Found**
+### **1. Hardhat Not Found**
 If you see an error like `command not found: hardhat`, ensure dependencies are installed:
 ```sh
 npm install
@@ -89,9 +67,16 @@ Then, try running:
 npx hardhat
 ```
 
-### **3. Reset Hardhat Cache**
+### **2. Reset Hardhat Cache**
 If you face weird errors, try resetting Hardhat:
 ```sh
 npx hardhat clean
 npx hardhat compile
+```
+
+### **3. Blockchain Issues**
+If you encounter issues with the local blockchain, try simulating some transactions:
+```sh
+(await ethers.getSigners())[0].sendTransaction({ to: "0x0000000000000000000000000000000000000001", value: 1 })
+
 ```
