@@ -592,10 +592,7 @@ return (
               <h3 style={{ marginTop: '30px' }}>For End Users:</h3>
               <ol>
                 <li>
-                  <strong>Create a Wallet:</strong> Start your journey by creating a secure digital wallet. For new users, we recommend setting up a MetaMask wallet.{' '}
-                  <a href="https://metamask.io" target="_blank" rel="noreferrer">
-                    MetaMask Link
-                  </a>
+                  <strong>Create a Wallet:</strong> Start your journey by creating a secure digital wallet. For new users, we recommend setting up a <a href="https://metamask.io" target="_blank" rel="noreferrer"> MetaMask </a> wallet.
                 </li>
                 <li>
                   <strong>Purchase a watch from a Luxury Watch Store:</strong> When you purchase a watch, the store will mint an NFT for you that is linked to the watch's unique serial number. This NFT will be sent directly to your wallet.
