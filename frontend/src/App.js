@@ -498,7 +498,7 @@ function App() {
   };
 
   const contentContainerStyle = {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',  // translucent white
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // translucent white
     maxWidth: '800px',
     margin: '0 auto',
     marginTop: '40px',
@@ -513,7 +513,7 @@ function App() {
   };
 
   const buttonStyle = {
-    backgroundColor: '#000',  // black button
+    backgroundColor: '#000', // black button
     color: '#fff',
     border: 'none',
     padding: '10px 16px',
@@ -542,19 +542,73 @@ function App() {
     marginTop: '5px',
   };
 
-  return (
+  const homepageTextStyle = {
+    marginTop: '40px',
+    lineHeight: '1.6', // nicer readability
+    fontSize: '16px',
+  };
+
+return (
     <div style={backgroundStyle}>
       <div style={contentContainerStyle}>
         <h1 style={headingStyle}>Luxury Watch NFT Authentication Platform</h1>
 
-        {/* If no account, show Connect button */}
+        {/* If no account, show Connect button + the About/Instructions section */}
         {!account ? (
-          <div style={{ textAlign: 'center' }}>
-            <p>Please connect your MetaMask wallet to continue.</p>
-            <button onClick={connectWallet} style={buttonStyle}>
-              Connect MetaMask
-            </button>
-          </div>
+          <>
+            {/* Section 1: Connect Button */}
+            <div style={{ textAlign: 'center' }}>
+              <p>Please connect your MetaMask wallet to continue.</p>
+              <button onClick={connectWallet} style={buttonStyle}>
+                Connect MetaMask
+              </button>
+            </div>
+
+            {/* Section 2: About/Instructions */}
+            <div style={homepageTextStyle}>
+              <h2>About Us</h2>
+              <p>
+                Our platform is designed to enhance trust, authenticity, and protect watch owners against theft. For watch buyers, our platform helps safeguard you from thefts and fakes. For watch stores, our platform helps protect your brand and customers, while also allowing for the collection of commission on watch resales.
+              </p>
+
+              <h2 style={{ marginTop: '30px' }}>Instructions</h2>
+
+              <h3 style={{ marginTop: '20px' }}>For Luxury Watch Stores:</h3>
+              <ol>
+                <li>
+                  <strong>Create a Wallet:</strong> Start your journey by creating a secure digital wallet. For new users, we recommend setting up a<a href="https://metamask.io" target="_blank" rel="noreferrer"> MetaMask </a> wallet.{' '}
+                </li>
+                <li>
+                  <strong>Create an NFT for each Product and Upload to the Blockchain:</strong> Upload the NFT design and metadata to the blockchain. Take note of the unique URI for each NFT. This URI will be used to link the NFT to the watch's unique serial number.
+                </li>
+                <li>
+                  <strong>Mint a unique NFT on our platform for each watch using its serial number:</strong> Each watch is assigned an NFT that serves as its digital replica on the blockchain. It must be minted directly to the wallet of the purchaser.
+                </li>
+              </ol>
+              <p>
+                <em>Note: Luxury Watch Stores can also access all end-user functions in the case watches are repurchased from clients.</em>
+              </p>
+
+              <h3 style={{ marginTop: '30px' }}>For End Users:</h3>
+              <ol>
+                <li>
+                  <strong>Create a Wallet:</strong> Start your journey by creating a secure digital wallet. For new users, we recommend setting up a MetaMask wallet.{' '}
+                  <a href="https://metamask.io" target="_blank" rel="noreferrer">
+                    MetaMask Link
+                  </a>
+                </li>
+                <li>
+                  <strong>Purchase a watch from a Luxury Watch Store:</strong> When you purchase a watch, the store will mint an NFT for you that is linked to the watch's unique serial number. This NFT will be sent directly to your wallet.
+                </li>
+                <li>
+                  <strong>Enjoy peace of mind knowing that your watch is safe:</strong> The NFT serves as a digital certificate of authenticity and ownership, providing an additional layer of security against theft. You can also mark the watch as stolen to further prevent any resales of your watch.
+                </li>
+                <li>
+                  <strong>Transfer the NFT to a new wallet if you sell the watch:</strong> If you decide to sell your watch, you should transfer the NFT to the new owner's wallet. You can choose to sell the watch entirely off-chain or through our platform, meaning the transaction will be recorded. Before selling, you must approve our platform to transfer the NFT on your behalf. Once the NFT is transferred, the new owner will have full ownership of the digital certificate of authenticity.
+                </li>
+              </ol>
+            </div>
+          </>
         ) : (
           <>
             <p>
