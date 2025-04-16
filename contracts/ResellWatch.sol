@@ -30,7 +30,7 @@ contract ResellWatch {
 
 
     constructor(
-        address _authorizedMinters, // Optional: include if you plan to use authorized checks
+        address _authorizedMinters,
         address _watchNFT,
         address _stolenRegistry
     ) {

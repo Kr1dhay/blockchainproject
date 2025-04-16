@@ -75,6 +75,23 @@ describe("ResellWatch Contract", function () {
 
   describe("Buying Watches", function () {
 
+
+    it("Should allow user to check price of a watch", async function () {
+      await luxuryWatchNFT.connect(minter).mint(addr1.address, "RLX-PRICECHECK", "ipfs://price-check");
+      await luxuryWatchNFT.connect(addr1).approveListingToken("RLX-PRICECHECK");
+      await resellWatch.connect(addr1).listWatch("RLX-PRICECHECK", ethers.parseEther("1"), addr2.address);
+
+      const price = await resellWatch.connect(addr2).getListingPriceandComission("RLX-PRICECHECK");
+      expect(price).to.equal(ethers.parseEther("1.05"));
+    });
+
+    it("Should not allow user to check price of a non-existing watch", async function () {
+      await resellWatch.connect(addr1).cancelListing("RLX-PRICECHECK");
+      await expect(
+        resellWatch.connect(addr2).getListingPriceandComission("RLX-PRICECHECK")
+      ).to.be.revertedWith("Watch not listed");
+    });
+
     it("Should complete a successful purchase", async function () {
 
       await luxuryWatchNFT.connect(minter).mint(addr1.address, "RLX-TESTBUY", "ipfs://test-buy");
