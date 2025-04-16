@@ -34,7 +34,7 @@ This compiles all Solidity smart contracts inside the `contracts/` folder.
 ### **5. Deploy Contracts (Locally)**
 Run the deployment script:
 ```sh
-npx hardhat run scripts/deploy.js --network hardhat
+npx hardhat run scripts/deploy.js --network localhost
 ```
 This will deploy the smart contracts to the local Hardhat blockchain.
 
