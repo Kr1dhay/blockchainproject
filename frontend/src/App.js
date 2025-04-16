@@ -255,7 +255,7 @@ function App() {
       console.error(error);
       setStatus('Error getting minter of token');
     }
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
 
@@ -278,7 +278,7 @@ function App() {
       setStatus('Error getting owner of token');
     }
 
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
   };
@@ -298,7 +298,7 @@ function App() {
       setStatus('Error burning token');
     }
 
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
   };
@@ -318,7 +318,7 @@ function App() {
       setStatus('Error approving listing token');
     }
 
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
   };
@@ -337,7 +337,7 @@ function App() {
       setStatus('Error flagging as stolen');
     }
 
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
   };
@@ -357,7 +357,7 @@ function App() {
       setStatus('Error unflagging as stolen');
     }
 
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
   };
@@ -376,7 +376,7 @@ function App() {
       console.error(error);
       setStatus('Error checking stolen status');
     }
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
   };
@@ -396,7 +396,7 @@ function App() {
       setStatus('Error canceling listing');
     }
 
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
   };
@@ -423,6 +423,28 @@ function App() {
       setStatus('Error buying watch');
     }
   };
+
+  const handleGetWatchPrice = async () => {
+    if (!userSerialID) {
+      setStatus('Please enter a serialID first');
+      return;
+    }
+    try {
+      setStatus(`Getting watch price...`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const price = await resellWatch.getListingPriceandComission(userSerialID);
+      const priceETH = formatEther(price);
+      setStatus(`Price: ${priceETH} ETH (Including commission)`);
+    } catch (error) {
+      console.error(error);
+      setStatus('Error getting watch price');
+    }
+
+    
+    setListPriceETH('');
+    setListBuyer('');
+  }
+  // -----------------------------------------------------
   
 
   // listWatch needs: string memory serialID, uint256 _priceETH, address _buyer
@@ -457,248 +479,291 @@ function App() {
       setStatus('Error listing watch');
     }
 
-    setUserSerialID('');
+    
     setListPriceETH('');
     setListBuyer('');
   };
 
-   // ------------------------
-  //  6) RENDER THE UI
-  // ------------------------
+  // -----------------------------------------------------
+  //                INLINE STYLES
+  // -----------------------------------------------------
+  const backgroundStyle = {
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed',
+    minHeight: '100vh',
+    margin: 0,
+    padding: 0,
+    fontFamily: 'Arial, sans-serif',
+  };
+
+  const contentContainerStyle = {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',  // translucent white
+    maxWidth: '800px',
+    margin: '0 auto',
+    marginTop: '40px',
+    borderRadius: '10px',
+    padding: '20px',
+    color: '#000', // black text
+  };
+
+  const headingStyle = {
+    textAlign: 'center',
+    marginBottom: '20px',
+  };
+
+  const buttonStyle = {
+    backgroundColor: '#000',  // black button
+    color: '#fff',
+    border: 'none',
+    padding: '10px 16px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    borderRadius: '5px',
+    marginRight: '10px',
+    marginTop: '5px',
+  };
+
+  const inputStyle = {
+    backgroundColor: '#fff',
+    padding: '8px',
+    border: '1px solid #ccc',
+    borderRadius: '5px',
+    marginLeft: '10px',
+    marginRight: '10px',
+    marginBottom: '5px',
+    fontSize: '14px',
+    width: '250px',
+    outline: 'none',
+  };
+
+  const labelStyle = {
+    display: 'inline-block',
+    marginTop: '5px',
+  };
+
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Luxury Watch NFT Authentication Platform</h1>
+    <div style={backgroundStyle}>
+      <div style={contentContainerStyle}>
+        <h1 style={headingStyle}>Luxury Watch NFT Authentication Platform</h1>
 
-      {/* If no account, show Connect button */}
-      {!account ? (
-        <div>
-          <p>Please connect your MetaMask wallet to continue.</p>
-          <button onClick={connectWallet} style={{ padding: '10px', fontSize: '16px' }}>
-            Connect MetaMask
-          </button>
-        </div>
-      ) : (
-        <>
-          <p>
-            Wallet connected: <strong>{account}</strong>
-          </p>
-          <p>Role: <strong>{typeOfConnection}</strong></p>
-          <p>{status}</p>
+        {/* If no account, show Connect button */}
+        {!account ? (
+          <div style={{ textAlign: 'center' }}>
+            <p>Please connect your MetaMask wallet to continue.</p>
+            <button onClick={connectWallet} style={buttonStyle}>
+              Connect MetaMask
+            </button>
+          </div>
+        ) : (
+          <>
+            <p>
+              Wallet connected: <strong>{account}</strong>
+            </p>
+            <p>Role: <strong>{typeOfConnection}</strong></p>
+            <p>{status}</p>
 
-          {/* If Owner, show Approve/Remove Minter with form */}
-          {typeOfConnection === 'Owner' && (
-            <div style={{ marginTop: '20px' }}>
-              <h2>Owner Functions</h2>
-
-              {/* Input form for Approve / Remove Minter */}
-              <div style={{ marginBottom: '10px' }}>
-                <label>
-                  Address: 
-                  <input
-                    type="text"
-                    value={ownerFormAddress}
-                    onChange={(e) => setOwnerFormAddress(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-
-                <label>
-                  Brand:
-                  <input
-                    type="text"
-                    value={ownerFormBrand}
-                    onChange={(e) => setOwnerFormBrand(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-
-                <label>
-                  Location:
-                  <input
-                    type="text"
-                    value={ownerFormLocation}
-                    onChange={(e) => setOwnerFormLocation(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-
-                <label>
-                  Comission Fee (in Basis Points):
-                  <input
-                    type="number"
-                    min="0"
-                    max="10000"
-                    value={ownerFormNumber}
-                    onChange={(e) => setOwnerFormNumber(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
+            {/* If Owner, show Approve/Remove Minter with form */}
+            {typeOfConnection === 'Owner' && (
+              <div style={{ marginTop: '20px' }}>
+                <h2>Owner Functions</h2>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>
+                    Address: 
+                    <input
+                      type="text"
+                      value={ownerFormAddress}
+                      onChange={(e) => setOwnerFormAddress(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <label style={labelStyle}>
+                    Brand:
+                    <input
+                      type="text"
+                      value={ownerFormBrand}
+                      onChange={(e) => setOwnerFormBrand(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <label style={labelStyle}>
+                    Location:
+                    <input
+                      type="text"
+                      value={ownerFormLocation}
+                      onChange={(e) => setOwnerFormLocation(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <label style={labelStyle}>
+                    Comission Fee (in Basis Points):
+                    <input
+                      type="number"
+                      min="0"
+                      max="10000"
+                      value={ownerFormNumber}
+                      onChange={(e) => setOwnerFormNumber(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                </div>
+                <button onClick={handleApproveMinter} style={buttonStyle}>
+                  Approve Minter
+                </button>
+                <button onClick={handleRemoveMinter} style={buttonStyle}>
+                  Remove Minter
+                </button>
               </div>
+            )}
 
-              {/* Buttons for Approve / Remove */}
-              <button onClick={handleApproveMinter} style={{ marginRight: '10px' }}>
-                Approve Minter
-              </button>
-              <button onClick={handleRemoveMinter}>Remove Minter</button>
-            </div>
-          )}
+            {/* If Minter, show Mint + User Functions */}
+            {typeOfConnection === 'Minter' && (
+              <div style={{ marginTop: '20px' }}>
+                <h2>Minter Functions</h2>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>
+                    Mint to (address):
+                    <input
+                      type="text"
+                      value={mintTo}
+                      onChange={(e) => setMintTo(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <label style={labelStyle}>
+                    Serial ID:
+                    <input
+                      type="text"
+                      value={mintSerialID}
+                      onChange={(e) => setMintSerialID(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <label style={labelStyle}>
+                    URI:
+                    <input
+                      type="text"
+                      value={mintURI}
+                      onChange={(e) => setMintURI(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                </div>
+                <button onClick={handleMint} style={buttonStyle}>
+                  Mint
+                </button>
 
-          {/* If Minter, show Mint + User Functions */}
-          {typeOfConnection === 'Minter' && (
-            <div style={{ marginTop: '20px' }}>
-              <h2>Minter Functions</h2>
-              {/* Mint Form */}
-              <div style={{ marginBottom: '10px' }}>
-                <label>
-                  Mint to (address):
-                  <input
-                    type="text"
-                    value={mintTo}
-                    onChange={(e) => setMintTo(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-                <label>
-                  Serial ID:
-                  <input
-                    type="text"
-                    value={mintSerialID}
-                    onChange={(e) => setMintSerialID(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-                <label>
-                  URI:
-                  <input
-                    type="text"
-                    value={mintURI}
-                    onChange={(e) => setMintURI(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
+                <h2 style={{ marginTop: '30px' }}>User Functions</h2>
+                <div style={{ marginTop: '10px' }}>
+                  <button onClick={handleMinterOfToken} style={buttonStyle}>minterOfToken</button>
+                  <button onClick={handleOwnerOfToken} style={buttonStyle}>ownerOfToken</button>
+                  <button onClick={handleBurn} style={buttonStyle}>burn</button>
+                  <button onClick={handleApproveListingToken} style={buttonStyle}>approveListingToken</button>
+                  <button onClick={handleFlagAsStolen} style={buttonStyle}>flagAsStolen</button>
+                  <button onClick={handleUnflagAsStolen} style={buttonStyle}>unflagAsStolen</button>
+                  <button onClick={handleIsStolen} style={buttonStyle}>isStolen</button>
+                  <button onClick={handleCancelListing} style={buttonStyle}>cancelListing</button>
+                  <button onClick={handleGetWatchPrice} style={buttonStyle}>getWatchPrice</button>
+                  <button onClick={handleBuyWatch} style={buttonStyle}>buyWatch</button>
+                </div>
+                <div style={{ marginTop: '10px' }}>
+                  <label style={labelStyle}>
+                    Serial ID:
+                    <input
+                      type="text"
+                      value={userSerialID}
+                      onChange={(e) => setUserSerialID(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                </div>
+                <div style={{ marginTop: '20px' }}>
+                  <h3>List Watch</h3>
+                  <label style={labelStyle}>
+                    Price (ETH):
+                    <input
+                      type="text"
+                      value={listPriceETH}
+                      onChange={(e) => setListPriceETH(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <label style={labelStyle}>
+                    Buyer Address:
+                    <input
+                      type="text"
+                      value={listBuyer}
+                      onChange={(e) => setListBuyer(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <button onClick={handleListWatch} style={buttonStyle}>listWatch</button>
+                </div>
               </div>
-              <button onClick={handleMint} style={{ marginRight: '10px' }}>
-                Mint
-              </button>
+            )}
 
-              <h2>User Functions</h2>
-              {/* Common Serial ID for all user calls */}
-        
-              <button onClick={handleMinterOfToken}>minterOfToken</button>
-              <button onClick={handleOwnerOfToken}>ownerOfToken</button>
-              <button onClick={handleBurn}>burn</button>
-              <button onClick={handleApproveListingToken}>approveListingToken</button>
-              <button onClick={handleFlagAsStolen}>flagAsStolen</button>
-              <button onClick={handleUnflagAsStolen}>unflagAsStolen</button>
-              <button onClick={handleIsStolen}>isStolen</button>
-              <button onClick={handleCancelListing}> cancelListing</button>
-              <button onClick={handleBuyWatch}> buyWatch </button>
+            {/* If User, show just User Functions */}
+            {typeOfConnection === 'User' && (
+              <div style={{ marginTop: '20px' }}>
+                <h2>User Functions</h2>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>
+                    Serial ID:
+                    <input
+                      type="text"
+                      value={userSerialID}
+                      onChange={(e) => setUserSerialID(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                </div>
+                <button onClick={handleMinterOfToken} style={buttonStyle}>minterOfToken</button>
+                <button onClick={handleOwnerOfToken} style={buttonStyle}>ownerOfToken</button>
+                <button onClick={handleBurn} style={buttonStyle}>burn</button>
+                <button onClick={handleApproveListingToken} style={buttonStyle}>approveListingToken</button>
+                <button onClick={handleFlagAsStolen} style={buttonStyle}>flagAsStolen</button>
+                <button onClick={handleUnflagAsStolen} style={buttonStyle}>unflagAsStolen</button>
+                <button onClick={handleIsStolen} style={buttonStyle}>isStolen</button>
+                <button onClick={handleCancelListing} style={buttonStyle}>cancelListing</button>
+                <button onClick={handleGetWatchPrice} style={buttonStyle}>getWatchPrice</button>
+                <button onClick={handleBuyWatch} style={buttonStyle}>buyWatch</button>
 
-
-              <div style={{ marginTop: '10px' }}>
-                <label>
-                  Serial ID:
-                  <input
-                    type="text"
-                    value={userSerialID}
-                    onChange={(e) => setUserSerialID(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
+                <div style={{ marginTop: '10px' }}>
+                  <h3>List Watch</h3>
+                  <label style={labelStyle}>
+                    Price in ETH (For Selling):
+                    <input
+                      type="text"
+                      value={listPriceETH}
+                      onChange={(e) => setListPriceETH(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <label style={labelStyle}>
+                    Buyer Address (For Selling):
+                    <input
+                      type="text"
+                      value={listBuyer}
+                      onChange={(e) => setListBuyer(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <br />
+                  <button onClick={handleListWatch} style={buttonStyle}>listWatch</button>
+                </div>
               </div>
-              
-              {/* listWatch needs 2 more fields */}
-
-              <div style={{ marginTop: '10px' }}>
-                <h3>List Watch</h3>
-                <label>
-                  Price (ETH):
-                  <input
-                    type="text"
-                    value={listPriceETH}
-                    onChange={(e) => setListPriceETH(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-                <label>
-                  Buyer Address:
-                  <input
-                    type="text"
-                    value={listBuyer}
-                    onChange={(e) => setListBuyer(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-                <button onClick={handleListWatch}>listWatch</button>
-              </div>
-            </div>
-          )}
-
-          {/* If User, show just User Functions */}
-          {typeOfConnection === 'User' && (
-            <div style={{ marginTop: '20px' }}>
-              <h2>User Functions</h2>
-              {/* Common Serial ID Field */}
-              <div style={{ marginBottom: '10px' }}>
-                <label>
-                  Serial ID:
-                  <input
-                    type="text"
-                    value={userSerialID}
-                    onChange={(e) => setUserSerialID(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-              </div>
-              <button onClick={handleMinterOfToken}>minterOfToken</button>
-              <button onClick={handleOwnerOfToken}>ownerOfToken</button>
-              <button onClick={handleBurn}>burn</button>
-              <button onClick={handleApproveListingToken}>approveListingToken</button>
-              <button onClick={handleFlagAsStolen}>flagAsStolen</button>
-              <button onClick={handleUnflagAsStolen}>unflagAsStolen</button>
-              <button onClick={handleIsStolen}>isStolen</button>
-              <button onClick={handleCancelListing}> cancelListing</button>
-              <button onClick={handleBuyWatch}> buyWatch </button>
-
-
-              {/* listWatch fields */}
-              <div style={{ marginTop: '10px' }}>
-                <h3>List Watch</h3>
-                <label>
-                  Price in ETH (For Selling):
-                  <input
-                    type="text"
-                    value={listPriceETH}
-                    onChange={(e) => setListPriceETH(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-                <label>
-                  Buyer Address (For Selling):
-                  <input
-                    type="text"
-                    value={listBuyer}
-                    onChange={(e) => setListBuyer(e.target.value)}
-                    style={{ marginLeft: '10px', marginRight: '10px' }}
-                  />
-                </label>
-                <br />
-                <button onClick={handleListWatch}>listWatch</button>
-
-              </div>
-
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
