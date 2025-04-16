@@ -73,3 +73,10 @@ If you face weird errors, try resetting Hardhat:
 npx hardhat clean
 npx hardhat compile
 ```
+
+### **3. Blockchain Issues**
+If you encounter issues with the local blockchain, try simulating some transactions:
+```sh
+(await ethers.getSigners())[0].sendTransaction({ to: "0x0000000000000000000000000000000000000001", value: 1 })
+
+```
