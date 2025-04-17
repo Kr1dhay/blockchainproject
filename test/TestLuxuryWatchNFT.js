@@ -59,7 +59,7 @@ describe("LuxuryWatchNFT", function () {
     });
 
       it ("should allow the owner to set the correct marketplace address", async function () {
-          await expect(luxuryWatchNFT.connect(contractOwner).setResllContractAddress(addr3.address))
+          await expect(luxuryWatchNFT.connect(contractOwner).setResellContractAddress(addr3.address))
               .to.not.be.reverted;
 
           expect(await luxuryWatchNFT.resellContractAddress()).to.equal(addr3.address);
