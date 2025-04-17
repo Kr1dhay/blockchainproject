@@ -74,7 +74,7 @@ contract LuxuryWatchNFT is ERC721URIStorage {
         emit TokenDestroyed(serialID);
     }
     
-    function setResllContractAddress(address _resaleContractAddress) external {
+    function setResellContractAddress(address _resaleContractAddress) external {
         require(msg.sender == contractOwner, "Only the contract owner can set the resale contract address.");
         resellContractAddress = _resaleContractAddress;
     }

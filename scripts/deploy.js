@@ -33,7 +33,7 @@ async function main() {
   console.log("ResellWatch deployed to:", await resellWatch.getAddress());
 
   // Set ResellWatch address in NFT contract
-  await luxuryWatchNFT.setResllContractAddress(await resellWatch.getAddress());
+  await luxuryWatchNFT.setResellContractAddress(await resellWatch.getAddress());
   console.log("✅ Setup complete - ready to use!");
 
   // Write addresses to frontend
