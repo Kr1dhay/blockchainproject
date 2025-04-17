@@ -108,9 +108,10 @@ contract ResellWatch {
         require(sentToMinter, "Transfer failed");
 
         luxuryWatchNFT.safeTransferFrom(listings[tokenId].seller, msg.sender, tokenId);
+        address seller = listings[tokenId].seller;
         delete listings[tokenId];
 
-        emit WatchTransferred(serialID, listings[tokenId].seller, msg.sender);
+        emit WatchTransferred(serialID, seller, msg.sender);
     }
 
 }
