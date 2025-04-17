@@ -28,7 +28,7 @@ describe("ResellWatch Contract", function () {
     ResellWatch = await ethers.getContractFactory("ResellWatch");
     resellWatch = await ResellWatch.connect(contractOwner).deploy(await authorizedMinters.getAddress(), await luxuryWatchNFT.getAddress(), await stolenWatchesRegistry.getAddress());
 
-    await luxuryWatchNFT.connect(contractOwner).setResllContractAddress(resellWatch.target);
+    await luxuryWatchNFT.connect(contractOwner).setResellContractAddress(resellWatch.target);
 
   });
 
