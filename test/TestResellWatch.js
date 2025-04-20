@@ -74,8 +74,6 @@ describe("ResellWatch Contract", function () {
   });
 
   describe("Buying Watches", function () {
-
-
     it("Should allow user to check price of a watch", async function () {
       await luxuryWatchNFT.connect(minter).mint(addr1.address, "RLX-PRICECHECK", "ipfs://price-check");
       await luxuryWatchNFT.connect(addr1).approveListingToken("RLX-PRICECHECK");
